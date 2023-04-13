@@ -1,0 +1,39 @@
+[package]
+name = "ovhdata-common"
+version = "0.1.0"
+authors = ["Sébastien Lambour <sebastien.lambour@ovhcloud.com>", "Claire Gallot <claire.gallot@ovhcloud.com>"]
+edition = "2021"
+license-file = "../LICENSE"
+
+[dependencies]
+async-trait = "0.1"
+bytes = "1.1.0"
+chrono = { version = "0.4", features = ["serde"] }
+crossterm = "0.26"
+descriptor = "0.0.4"
+futures = "0.3"
+hyper = { version = "0.14", features = ["full"] }
+lazy_static = "1.4"
+maplit = "1.0"
+number_prefix = "0.4"
+reqwest = { version = "0.11", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.15", features = ["full"] }
+sha1 = "0.10.0"
+thiserror = "1.0"
+url = "2.2"
+uuid = { version = "1.1", features = ["v4", "serde"] }
+
+# Logging + Telemetry
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+tracing-bunyan-formatter = "0.3"
+tracing-log = "0.1"
+time = { version = "0.3", default-features = false, features = ["formatting"] }
+
+[dev-dependencies]
+tracing-test = "0.1"
+# To compare 2 directories
+dir-diff = "0.3.2"
+criterion = { version = "0.4", features = ["async_tokio"] }

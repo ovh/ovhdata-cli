@@ -1,0 +1,7 @@
+{
+  "auth_method": "ovhapiv6",
+  "ovhapiv6": {
+    "create_token_url": "https://www.ovh.com/auth/api/createToken",
+    "endpoint_url": "https://eu.api.ovh.com/1.0"
+  }
+}
