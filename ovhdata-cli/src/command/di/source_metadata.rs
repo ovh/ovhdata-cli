@@ -1,13 +1,10 @@
-use crossterm::style::Stylize;
-use std::io::stdout;
-
 use ovhdata_common::model::di::source_metadata::{TableMeta};
 use ovhdata_common::ovhapi::{OVHapiV6Client, DiApi};
 
 use crate::config::Context;
 use crate::opts::{SourceGet, SourceSubMetaCommands};
 use crate::utils::ui::printer::{Output, Printer};
-use crate::utils::{Error, Result};
+use crate::utils::{Result};
 
 pub struct SourceMetadataCommand {
     rcp_client: OVHapiV6Client,

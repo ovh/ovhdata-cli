@@ -43,6 +43,8 @@ pub enum SubCommand {
     Completion(Completion),
     /// Controls configuration of ovhdata-cli
     Config(ConfigShim),
+    /// Upgrade the CLI
+    Upgrade(Upgrade),    
     /// Displays logs of a command executed by the cli
     Debug(Debug),
     /// Di (Data integration) product Subcommand
@@ -75,6 +77,13 @@ pub struct Login {
     /// Command output format
     #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "description"]).map(|s| s.parse::<OutputObject>().unwrap()))]
     pub output: Option<OutputObject>,
+}
+
+#[derive(Parser)]
+pub struct Upgrade {
+    /// Force upgrade
+    #[clap(short, long)]
+    pub force: bool,
 }
 
 #[derive(Parser)]
@@ -156,28 +165,6 @@ pub enum OutputList {
 impl Default for OutputList {
     fn default() -> Self {
         Self::Table
-    }
-}
-
-impl OutputList {
-    pub fn into_output_using_fields_vec(self, fields: Vec<String>) -> Output {
-        match self {
-            OutputList::Table => Output::Table(fields),
-            other => other.into(),
-        }
-    }
-
-    pub fn into_output_using_comma_separated_fields(
-        self,
-        headers_raw_str: &Option<String>,
-    ) -> Output {
-        // Compute list of fields from row string if any
-        let fields = headers_raw_str
-            .as_ref()
-            .map(|x| x.split(',').map(|x| x.to_string()).collect::<Vec<String>>())
-            .unwrap_or_default();
-
-        return self.into_output_using_fields_vec(fields);
     }
 }
 

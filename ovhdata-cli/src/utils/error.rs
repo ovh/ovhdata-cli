@@ -12,8 +12,10 @@ pub enum Error {
     UserInput,
     #[error("Config error: {0}")]
     Config(#[from] crate::config::Error),
-   #[error("IO error: {0}")]
+    #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("Request error: {0}")]
+    Reqwest(#[from] reqwest::Error),
     #[error("Config error: {0}")]
     OvhcloudConfig(#[from] ovhdata_common::config::Error),
     #[error("Data API error: {0}")]

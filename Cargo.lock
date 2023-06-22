@@ -692,6 +692,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "filetime"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cbc844cecaee9d4443931972e1289c8ff485cb4cc2767cb03ca139ed6885153"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "redox_syscall 0.2.16",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1414,7 +1426,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "ovhdata-cli"
-version = "0.1.0"
+version = "0.1.1-dev"
 dependencies = [
  "chrono",
  "clap 4.2.2",
@@ -1424,6 +1436,7 @@ dependencies = [
  "descriptor",
  "dialoguer",
  "dirs",
+ "filetime",
  "futures",
  "lazy_static",
  "maplit",
@@ -1433,6 +1446,7 @@ dependencies = [
  "ovhdata-common",
  "pulldown-cmark",
  "reqwest",
+ "semver",
  "serde",
  "serde_json",
  "serde_yaml",
@@ -1448,7 +1462,7 @@ dependencies = [
 
 [[package]]
 name = "ovhdata-common"
-version = "0.1.0"
+version = "0.1.1-dev"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1823,6 +1837,12 @@ dependencies = [
  "core-foundation-sys",
  "libc",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
 
 [[package]]
 name = "serde"
