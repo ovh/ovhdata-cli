@@ -1,7 +1,8 @@
 {
+  "cli_release_url": "https://api.github.com/repos/ovh/ovhdata-cli/releases",
   "auth_method": "ovhapiv6",
   "ovhapiv6": {
     "create_token_url": "https://www.ovh.com/auth/api/createToken",
-    "endpoint_url": "https://ca.api.ovh.com/1.0/"
+    "endpoint_url": "https://ca.api.ovh.com/1.0"
   }
 }

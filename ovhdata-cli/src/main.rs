@@ -16,6 +16,7 @@ use crate::command::completion::CompletionCommand;
 use crate::command::me::MeCommand;
 use crate::command::debug::DebugCommand;
 use crate::command::auth;
+use crate::command::upgrade;
 use crate::command::di::DiCommand;
 use crate::command::config::ConfigCommand;
 
@@ -60,10 +61,40 @@ async fn main() {
 
     *NO_SPINNER.write().expect(BUG) = opts.no_spinner || !stdout().is_tty();
 
+    // Auto upgrade on startup except for the upgrade command ;-)
+    match opts.subcmd {
+        SubCommand::Upgrade(_) => {},
+        _ => auto_upgrade().await
+    }
+
     // Execute command
     let command_result = execute_command(opts).await;
 
     unwrap_or_exit(command_result, verbose);
+}
+
+async fn auto_upgrade() {
+    let auto_upgrade = Context::get().features.auto_upgrade;
+    let confirm_before_upgrade = Context::get().features.confirm_before_upgrade;
+
+    if auto_upgrade &&
+        // Either no-confirm or in a TTY
+        (stdout().is_tty() || !confirm_before_upgrade) &&
+        // No version check in last hour
+        upgrade::Upgrade::release_cache_expired() {
+
+        // Try to auto-upgrade
+        if let Err(err) = upgrade::Upgrade::new()
+            .upgrade(false, confirm_before_upgrade, true).await {
+            Printer::eprintln_fail(&err.to_string());
+        }
+    } else if stdout().is_tty(){
+        // Only display banner on break changes
+        if let Err(err) = upgrade::Upgrade::new()
+            .check_upgrade().await {
+            Printer::eprintln_fail(&err.to_string());
+        }
+    }
 }
 
 fn init_log(verbosity: u8, json: bool) {
@@ -125,6 +156,10 @@ async fn execute_command(opts: Opts) -> Result<()> {
     });
 
     match opts.subcmd {
+        // Upgrade
+        SubCommand::Upgrade(Upgrade { force }) => {
+            upgrade::Upgrade::new().upgrade(force, true, false).await?
+        }        
         // Login
         SubCommand::Login(login) => {
             let command = auth::Auth::new(build_ovhapi_client().await?);

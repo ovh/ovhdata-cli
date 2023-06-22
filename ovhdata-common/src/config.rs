@@ -139,6 +139,8 @@ impl AllConfig {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Descriptor )]
 pub struct Config {
     #[descriptor(skip)]
+    pub cli_release_url: String,
+    #[descriptor(skip)]
     pub auth_method: String,
     #[descriptor(rename_header = "ENDPOINT")]
     pub ovhapiv6: ConfigOVHapiV6,

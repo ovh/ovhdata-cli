@@ -31,6 +31,8 @@ pub const HELP_NO_AUTH_HOW_TO: &'static str = include_str!("../../../doc/no-auth
 pub const HELP_NO_SERVICE_NAME_HOW_TO: &'static str = include_str!("../../../doc/no-service-name-how-to.md");
 pub const HELP_LOGIN_SUCCESS: &'static str = include_str!("../../../doc/login-success.md");
 pub const HELP_COMPLETION_HOW_TO: &'static str = include_str!("../../../doc/completion-how-to.md");
+pub const HELP_UPGRADE: &'static str = include_str!("../../../doc/upgrade-info.md");
+pub const HELP_UPGRADE_MANDATORY: &'static str = include_str!("../../../doc/upgrade-mandatory.md");
 
 #[cfg(target_os = "windows")]
 pub const VALID: &'static str = "";
@@ -63,7 +65,7 @@ impl Printer {
 
     pub fn stop_spinner(spinner: Option<Spinner>) {
         if spinner.is_some() {
-            spinner.unwrap().stop();
+            spinner.unwrap().stop_with_newline();
         }
     }
 
