@@ -1,6 +1,6 @@
 [package]
 name = "ovhdata-common"
-version = "0.1.3-dev"
+version = "0.1.3"
 authors = ["Sébastien Lambour <sebastien.lambour@ovhcloud.com>", "Claire Gallot <claire.gallot@ovhcloud.com>"]
 edition = "2021"
 license-file = "../LICENSE"
