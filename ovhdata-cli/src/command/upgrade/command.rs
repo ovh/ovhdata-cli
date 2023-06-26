@@ -37,7 +37,6 @@ pub struct Upgrade {}
 #[derive(Debug, Clone, Deserialize, Descriptor)]
 pub struct GithubAsset {
     pub name: String,
-    pub label: String,
     pub browser_download_url: String,
 }
 
