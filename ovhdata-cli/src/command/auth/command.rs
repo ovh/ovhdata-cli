@@ -8,16 +8,14 @@ use crate::utils::ui::printer::{Output, Printer, HELP_LOGIN_HOW_TO, HELP_LOGIN_S
 use crate::utils::{Error, Result};
 
 pub struct Auth {
-    rcp_client: OVHapiV6Client,
     config: Config,
 }
 
 impl Auth {
-    pub fn new(rcp_client: OVHapiV6Client) -> Self {
+    pub fn new() -> Self {
 
         let config = Config::get().clone();
         Self {
-            rcp_client,
             config,
         }
     }
@@ -38,10 +36,20 @@ impl Auth {
             // If the config exists, test it
             {
                 let context = Context::get();
-                if context.ovhapi_credentials.is_some() {
+                let ovhapicreds = context.get_ovhapi_credentials();
+                if ovhapicreds.is_some() {
                     // test connection
                     Printer::println_success(&mut stdout(), "Current connection infos...");
-                    let creds_result = self.rcp_client.current_credential().await;
+
+                    let creds = &ovhapicreds.unwrap();
+
+                    let ovhapiv6_client = OVHapiV6Client::new(
+                        Config::get().ovhapiv6.endpoint_url.clone(),
+                        creds.application_key.clone().unwrap(),
+                        creds.application_secret.clone().unwrap(),
+                        creds.consumer_key.clone().unwrap());
+
+                    let creds_result = ovhapiv6_client.current_credential().await;
 
                     if creds_result.is_ok() {
                         Printer::print_object(&creds_result.unwrap(), &output)?;
