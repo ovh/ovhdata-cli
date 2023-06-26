@@ -41,9 +41,7 @@ impl DestinationConnectorCommand {
         };
 
         if interactive {
-            let cmd:String = format!("ovhdata-cli di destination-connector get {} --service-name {} ", &id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di destination-connector get {} --service-name {} ", &id, &service_name));
         }
 
         let connector = self.rcp_client.clone().di_destination_connector(&service_name, &id).await?;

@@ -45,9 +45,7 @@ impl SourceCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di source get {} --service-name {} ", &id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di source get {} --service-name {} ", &id, &service_name));
         }
 
         let source = self.rcp_client.clone().di_source(&service_name, &id).await?;
@@ -60,9 +58,7 @@ impl SourceCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di source status {} --service-name {} ", &id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di source status {} --service-name {} ", &id, &service_name));
         }
 
         let source_status =self.rcp_client.clone().di_source_status(&service_name, &id).await?;
@@ -105,11 +101,10 @@ impl SourceCommand {
             let message  = format!("Do you want to update the source {} ?", id);
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("ovhdata-cli di source update {} --service-name {} ", &id, &service_name);
+            let mut cmd:String = format!("di source update {} --service-name {} ", &id, &service_name);
             for parameter in spec.parameters.iter() {
                 cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
             }
-            println!();
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
@@ -157,11 +152,10 @@ impl SourceCommand {
             let message  = format!("Do you want to create the source {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("ovhdata-cli di source create {} --service-name {} --connector-id {}", &spec.name, &service_name, &connector_id);
+            let mut cmd:String = format!("di source create {} --service-name {} --connector-id {}", &spec.name, &service_name, &connector_id);
             for parameter in spec.parameters.iter() {
                 cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
             }
-            println!();
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
@@ -192,9 +186,7 @@ impl SourceCommand {
         }
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di source delete {} --service-name {} ", &source_id, &service_name);
-            println!();
-            Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di source delete {} --service-name {} ", &source_id, &service_name));
         }
 
         let spinner = Printer::start_spinner("Deleting source");

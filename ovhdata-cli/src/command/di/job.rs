@@ -36,9 +36,7 @@ impl JobCommand {
         };
 
         if interactive {
-            let cmd:String = format!("ovhdata-cli di job list --service-name {} --workflow-id {}", &service_name, &workflow_id);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di job list --service-name {} --workflow-id {}", &service_name, &workflow_id));
         } 
 
         let jobs = self.rcp_client.clone().di_jobs(&service_name, &workflow_id).await?;
@@ -54,9 +52,7 @@ impl JobCommand {
         let id = result.1;
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di job get {} --service-name {} --workflow-id {}", &id, &service_name, &workflow_id);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di job get {} --service-name {} --workflow-id {}", &id, &service_name, &workflow_id));
         } 
 
         let job = self.rcp_client.clone().di_job(&service_name, &workflow_id, &id).await?;
@@ -72,9 +68,7 @@ impl JobCommand {
         let id = result.1;
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di job stop {} --service-name {} --workflow-id {}", &id, &service_name, &workflow_id);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di job stop {} --service-name {} --workflow-id {}", &id, &service_name, &workflow_id));
         } 
 
         self.rcp_client.clone().di_job_delete(&service_name, &workflow_id, &id).await?;

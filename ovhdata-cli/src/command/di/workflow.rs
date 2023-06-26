@@ -45,9 +45,7 @@ impl WorkflowCommand {
         let workflow_id = self.get_workflow_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di workflow get {} --service-name {} ", &workflow_id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di workflow get {} --service-name {} ", &workflow_id, &service_name));
         }
 
         let workflow = self.rcp_client.clone().di_workflow(&service_name, &workflow_id).await?;
@@ -90,14 +88,13 @@ impl WorkflowCommand {
             let message  = format!("Do you want to create the workflow {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("ovhdata-cli di workflow create {} --service-name {} --source-id {} --destination-id {} --region {}", &spec.name, &service_name, &spec.source_id, &spec.destination_id, &spec.region);
+            let mut cmd:String = format!("di workflow create {} --service-name {} --source-id {} --destination-id {} --region {}", &spec.name, &service_name, &spec.source_id, &spec.destination_id, &spec.region);
             if spec.description.clone().is_some() {
                 cmd.push_str(&format!(" --description {}", spec.description.clone().unwrap()));
             }
             if spec.schedule.clone().is_some() {
                 cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
             }
-            println!();
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
@@ -125,9 +122,7 @@ impl WorkflowCommand {
         };
 
         if interactive {
-            let cmd:String = format!("ovhdata-cli di destination run {} --service-name {} ", &id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di destination run {} --service-name {} ", &id, &service_name));
         }
 
         let spinner = Printer::start_spinner("Running workflow");
@@ -153,9 +148,7 @@ impl WorkflowCommand {
         }
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di workflow delete {} --service-name {} ", &workflow_id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di workflow delete {} --service-name {} ", &workflow_id, &service_name));
         }
 
         let spinner = Printer::start_spinner("Deleting workflow");
@@ -202,7 +195,7 @@ impl WorkflowCommand {
             let message  = format!("Do you want to update the workflow {} ?", workflow_id);
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("ovhdata-cli di workflow update {} --service-name {} ", &workflow_id, &service_name);
+            let mut cmd:String = format!("di workflow update {} --service-name {} ", &workflow_id, &service_name);
             if spec.name.clone().is_some() {
                 cmd.push_str(&format!(" --name {}", spec.name.clone().unwrap()));
             }
@@ -215,7 +208,6 @@ impl WorkflowCommand {
             if spec.schedule.clone().is_some() {
                 cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
             }
-            println!();
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
@@ -255,9 +247,7 @@ impl WorkflowCommand {
         let verb = if enabled {"enabl"} else {"disabl"};
 
         if input.id.is_none() {
-            let cmd:String = format!("ovhdata-cli di workflow {}e {} --service-name {} ", &verb, &workflow_id, &service_name);
-                println!();
-                Printer::print_command(cmd.as_str());
+            Printer::print_command(&format!("di workflow {}e {} --service-name {} ", &verb, &workflow_id, &service_name));
         }
         
         let spinner = Printer::start_spinner(&format!("Workflow {}ing", &verb).as_str());

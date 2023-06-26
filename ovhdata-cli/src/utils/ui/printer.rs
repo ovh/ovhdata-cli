@@ -24,6 +24,7 @@ use ovhdata_common::model::di::connector::{ConnectorParameter, ConnectorValidato
 use crate::config::{Context, Toggle};
 use crate::opts::NameValue;
 use crate::utils::{Error, Result};
+use crate::CLI_NAME;
 
 pub const HELP_MAIN: &'static str = include_str!("../../../doc/main-help.md");
 pub const HELP_LOGIN_HOW_TO: &'static str = include_str!("../../../doc/login-how-to.md");
@@ -424,7 +425,8 @@ impl Printer {
     }
 
     pub fn print_command(command: &str) {
-        writeln!(stdout(), "{}\n> {}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", command.bold())
+        println!();
+        writeln!(stdout(), "{}\n> {}{}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", CLI_NAME.bold(), command.bold())
             .expect("can't write on stdout");
     }
 
