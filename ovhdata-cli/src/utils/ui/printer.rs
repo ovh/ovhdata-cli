@@ -423,6 +423,11 @@ impl Printer {
         Ok(())
     }
 
+    pub fn print_command(command: &str) {
+        writeln!(stdout(), "{}\n> {}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", command.bold())
+            .expect("can't write on stdout");
+    }
+
     pub fn print_help(markdown: &str, toggle: Toggle) {
         // Check if this help is toggled
         if Context::get().is_toggle(toggle) {

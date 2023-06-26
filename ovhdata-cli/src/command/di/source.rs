@@ -1,4 +1,4 @@
-use crossterm::style::Stylize;
+use crossterm::style::{Stylize};
 use std::io::stdout;
 
 use ovhdata_common::model::di::source::{SourceSpec};
@@ -44,6 +44,12 @@ impl SourceCommand {
 
         let id = self.get_source_id(&service_name, &input.id).await?;
 
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di source get {} --service-name {} ", &id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
+
         let source = self.rcp_client.clone().di_source(&service_name, &id).await?;
         Printer::print_object(&source, &output)?;
         Ok(())
@@ -52,6 +58,12 @@ impl SourceCommand {
     async fn get_last_connection_status(&self, input: &SourceGet, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
         let id = self.get_source_id(&service_name, &input.id).await?;
+
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di source status {} --service-name {} ", &id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
 
         let source_status =self.rcp_client.clone().di_source_status(&service_name, &id).await?;
         Printer::print_object(&source_status, &output)?;
@@ -93,6 +105,13 @@ impl SourceCommand {
             let message  = format!("Do you want to update the source {} ?", id);
             let confirm = Printer::confirm(message.as_str());
 
+            let mut cmd:String = format!("ovhdata-cli di source update {} --service-name {} ", &id, &service_name);
+            for parameter in spec.parameters.iter() {
+                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
+
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Update source canceled")));
             }
@@ -129,7 +148,7 @@ impl SourceCommand {
         let spec = SourceSpec {
             name: input.name.clone(),
             parameters,
-            connector_id: Some(connector_id),
+            connector_id: Some(connector_id.clone()),
         };
 
         // new parameters we are in interactive mode
@@ -137,6 +156,13 @@ impl SourceCommand {
             Printer::print_object(&spec, &output)?;
             let message  = format!("Do you want to create the source {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
+
+            let mut cmd:String = format!("ovhdata-cli di source create {} --service-name {} --connector-id {}", &spec.name, &service_name, &connector_id);
+            for parameter in spec.parameters.iter() {
+                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Create source canceled")));
@@ -163,6 +189,12 @@ impl SourceCommand {
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Delete source canceled")));
             }
+        }
+
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di source delete {} --service-name {} ", &source_id, &service_name);
+            println!();
+            Printer::print_command(cmd.as_str());
         }
 
         let spinner = Printer::start_spinner("Deleting source");

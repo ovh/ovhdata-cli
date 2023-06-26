@@ -42,6 +42,12 @@ impl DestinationCommand {
 
         let id = self.get_destination_id(&service_name, &input.id).await?;
 
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di destination get {} --service-name {} ", &id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
+
         let destination = self.rcp_client.clone().di_destination(&service_name, &id).await?;
         Printer::print_object(&destination, &output)?;
         Ok(())
@@ -50,6 +56,12 @@ impl DestinationCommand {
     async fn get_last_connection_status(&self, input: &DestGet, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
         let id = self.get_destination_id(&service_name, &input.id).await?;
+
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di destination status {} --service-name {} ", &id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
 
         let destination_status =self.rcp_client.clone().di_destination_status(&service_name, &id).await?;
         Printer::print_object(&destination_status, &output)?;
@@ -70,7 +82,7 @@ impl DestinationCommand {
         let spec = DestinationSpec {
             name: input.name.clone(),
             parameters,
-            connector_id: Some(connector_id),
+            connector_id: Some(connector_id.clone()),
         };
 
         // new parameters we are in interactive mode
@@ -78,6 +90,13 @@ impl DestinationCommand {
             Printer::print_object(&spec, &output)?;
             let message  = format!("Do you want to create the destination {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
+
+            let mut cmd:String = format!("ovhdata-cli di destination create {} --service-name {} --connector-id {}", &spec.name, &service_name, &connector_id);
+            for parameter in spec.parameters.iter() {
+                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Create destination canceled")));
@@ -124,26 +143,33 @@ impl DestinationCommand {
             let message  = format!("Do you want to update the destination {} ?", id);
             let confirm = Printer::confirm(message.as_str());
 
+            let mut cmd:String = format!("ovhdata-cli di destination update {} --service-name {} ", &id, &service_name);
+            for parameter in spec.parameters.iter() {
+                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
+
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Update destination canceled")));
             }
         }
 
         let spinner = Printer::start_spinner("Destination updating");
-        let source = self.rcp_client.di_destination_update(&service_name, &id, &spec).await?;
+        let destination = self.rcp_client.di_destination_update(&service_name, &id, &spec).await?;
         Printer::stop_spinner(spinner);
 
-        Printer::print_object(&source, &output)?;
+        Printer::print_object(&destination, &output)?;
         Ok(())
     }
 
     async fn delete(&self, input: &DestDelete) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let source_id = self.get_destination_id(&service_name, &input.id).await?;
+        let destination_id = self.get_destination_id(&service_name, &input.id).await?;
 
         if !input.force {
-            let message  = format!("Are you sure you want to delete the destination {} ?", source_id.clone().green());
+            let message  = format!("Are you sure you want to delete the destination {} ?", destination_id.clone().green());
             let confirm = Printer::confirm(message.as_str());
 
             if confirm.is_err() {
@@ -151,8 +177,14 @@ impl DestinationCommand {
             }
         }
 
-        self.rcp_client.di_destination_delete(&service_name, &source_id).await?;
-        Printer::println_success(&mut stdout(), &format!("Destination {} successfully deleted", source_id.clone().green()));
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di destination delete {} --service-name {} ", &destination_id, service_name);
+            println!();
+            Printer::print_command(cmd.as_str());
+        }
+
+        self.rcp_client.di_destination_delete(&service_name, &destination_id).await?;
+        Printer::println_success(&mut stdout(), &format!("Destination {} successfully deleted", destination_id.clone().green()));
         Ok(())
     }
 

@@ -44,6 +44,12 @@ impl WorkflowCommand {
 
         let workflow_id = self.get_workflow_id(&service_name, &input.id).await?;
 
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di workflow get {} --service-name {} ", &workflow_id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
+
         let workflow = self.rcp_client.clone().di_workflow(&service_name, &workflow_id).await?;
         Printer::print_object(&workflow, &output)?;
         Ok(())
@@ -68,7 +74,7 @@ impl WorkflowCommand {
             input.destination_id.clone().unwrap()
         };
 
-        let spec = WorkflowSpec {
+        let spec = &WorkflowSpec {
             name: input.name.clone(),
             description: input.description.clone(),
             source_id,
@@ -80,9 +86,19 @@ impl WorkflowCommand {
 
         // if there was an interaction, ask for confirmation
         if missing_destination || missing_source {
-            Printer::print_object(&spec, &output)?;
+            Printer::print_object(spec, &output)?;
             let message  = format!("Do you want to create the workflow {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
+
+            let mut cmd:String = format!("ovhdata-cli di workflow create {} --service-name {} --source-id {} --destination-id {} --region {}", &spec.name, &service_name, &spec.source_id, &spec.destination_id, &spec.region);
+            if spec.description.clone().is_some() {
+                cmd.push_str(&format!(" --description {}", spec.description.clone().unwrap()));
+            }
+            if spec.schedule.clone().is_some() {
+                cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Create workflow canceled")));
@@ -90,7 +106,7 @@ impl WorkflowCommand {
         }
 
         let spinner = Printer::start_spinner("Creating workflow");
-        let workflow = self.rcp_client.di_workflow_post(&service_name, &spec).await?;
+        let workflow = self.rcp_client.di_workflow_post(&service_name, spec).await?;
         Printer::stop_spinner(spinner);
 
         Printer::print_object(&workflow, &output)?;
@@ -107,6 +123,12 @@ impl WorkflowCommand {
         } else {
             input.id.clone().unwrap()
         };
+
+        if interactive {
+            let cmd:String = format!("ovhdata-cli di destination run {} --service-name {} ", &id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
 
         let spinner = Printer::start_spinner("Running workflow");
         let workflow = self.rcp_client.clone().di_job_post(&service_name, &id).await?;
@@ -128,6 +150,12 @@ impl WorkflowCommand {
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Delete workflow canceled")));
             }
+        }
+
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di workflow delete {} --service-name {} ", &workflow_id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
         }
 
         let spinner = Printer::start_spinner("Deleting workflow");
@@ -174,6 +202,22 @@ impl WorkflowCommand {
             let message  = format!("Do you want to update the workflow {} ?", workflow_id);
             let confirm = Printer::confirm(message.as_str());
 
+            let mut cmd:String = format!("ovhdata-cli di workflow update {} --service-name {} ", &workflow_id, &service_name);
+            if spec.name.clone().is_some() {
+                cmd.push_str(&format!(" --name {}", spec.name.clone().unwrap()));
+            }
+            if spec.enabled.clone().is_some() {
+                cmd.push_str(&format!(" --enabled {}", spec.enabled.clone().unwrap()));
+            }
+            if spec.description.clone().is_some() {
+                cmd.push_str(&format!(" --description {}", spec.description.clone().unwrap()));
+            }
+            if spec.schedule.clone().is_some() {
+                cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
+            }
+            println!();
+            Printer::print_command(cmd.as_str());
+
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Update workflow canceled")));
             }
@@ -209,12 +253,18 @@ impl WorkflowCommand {
         };
 
         let verb = if enabled {"enabl"} else {"disabl"};
+
+        if input.id.is_none() {
+            let cmd:String = format!("ovhdata-cli di workflow {}e {} --service-name {} ", &verb, &workflow_id, &service_name);
+                println!();
+                Printer::print_command(cmd.as_str());
+        }
         
-        let spinner = Printer::start_spinner(&format!("Workflow {}ing", verb).as_str());
+        let spinner = Printer::start_spinner(&format!("Workflow {}ing", &verb).as_str());
         self.rcp_client.di_workflow_put(&service_name, &workflow_id, &spec).await?;
         Printer::stop_spinner(spinner);
 
-        Printer::println_success(&mut stdout(), &format!("\nWorkflow {} {}ed", workflow_id.clone().green(), verb));
+        Printer::println_success(&mut stdout(), &format!("\nWorkflow {} {}ed", workflow_id.clone().green(), &verb));
         Ok(())
     }
 
