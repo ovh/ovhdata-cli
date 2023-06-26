@@ -162,12 +162,12 @@ async fn execute_command(opts: Opts) -> Result<()> {
         }        
         // Login
         SubCommand::Login(login) => {
-            let command = auth::Auth::new(build_ovhapi_client().await?);
+            let command = auth::Auth::new();
             command.login(login.application_key, login.consumer_key, login.secret, login.output.unwrap_or_default().into()).await?
         }
 
         // Logout
-        SubCommand::Logout(_logout) => auth::Auth::new(build_ovhapi_client().await?).logout().await?,
+        SubCommand::Logout(_logout) => auth::Auth::new().logout().await?,
 
         // Debug
         SubCommand::Debug(Debug { session_id }) => {
