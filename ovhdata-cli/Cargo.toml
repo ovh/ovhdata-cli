@@ -1,6 +1,6 @@
 [package]
 name = "ovhdata-cli"
-version = "0.1.4"
+version = "0.1.5-dev"
 authors = ["Sébastien Lambour <sebastien.lambour@ovhcloud.com>", "Claire Gallot <claire.gallot@ovhcloud.com>"]
 edition = "2021"
 license-file = "../LICENSE"
