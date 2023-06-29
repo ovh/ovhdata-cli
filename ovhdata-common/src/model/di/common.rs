@@ -11,6 +11,14 @@ pub struct Parameter {
     pub value: String
 }
 
+pub fn parameters_as_string(parameters: &Vec<Parameter>) -> String {
+    let mut cmd = String::new();
+    for parameter in parameters.iter() {
+        cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+    }
+    cmd
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {

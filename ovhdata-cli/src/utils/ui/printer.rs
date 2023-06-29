@@ -426,7 +426,7 @@ impl Printer {
 
     pub fn print_command(command: &str) {
         println!();
-        writeln!(stdout(), "{}\n> {}{}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", CLI_NAME.bold(), command.bold())
+        writeln!(stdout(), "{}\n> {} {}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", CLI_NAME.bold(), command.bold())
             .expect("can't write on stdout");
     }
 

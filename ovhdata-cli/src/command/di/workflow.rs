@@ -72,7 +72,7 @@ impl WorkflowCommand {
             input.destination_id.clone().unwrap()
         };
 
-        let spec = &WorkflowSpec {
+        let spec = WorkflowSpec {
             name: input.name.clone(),
             description: input.description.clone(),
             source_id,
@@ -84,7 +84,7 @@ impl WorkflowCommand {
 
         // if there was an interaction, ask for confirmation
         if missing_destination || missing_source {
-            Printer::print_object(spec, &output)?;
+            Printer::print_object(&spec, &output)?;
             let message  = format!("Do you want to create the workflow {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
 
@@ -103,7 +103,7 @@ impl WorkflowCommand {
         }
 
         let spinner = Printer::start_spinner("Creating workflow");
-        let workflow = self.rcp_client.di_workflow_post(&service_name, spec).await?;
+        let workflow = self.rcp_client.di_workflow_post(&service_name, &spec).await?;
         Printer::stop_spinner(spinner);
 
         Printer::print_object(&workflow, &output)?;

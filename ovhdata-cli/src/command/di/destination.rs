@@ -2,6 +2,7 @@ use crossterm::style::Stylize;
 use std::io::stdout;
 
 use ovhdata_common::model::di::destination::DestinationSpec;
+use ovhdata_common::model::di::common::parameters_as_string;
 use ovhdata_common::ovhapi::{OVHapiV6Client, DiApi};
 
 use crate::config::Context;
@@ -87,10 +88,7 @@ impl DestinationCommand {
             let message  = format!("Do you want to create the destination {} ?", input.name.clone());
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("di destination create {} --service-name {} --connector-id {}", &spec.name, &service_name, &connector_id);
-            for parameter in spec.parameters.iter() {
-                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
-            }
+            let cmd:String = format!("di destnation create {} --service-name {} --connector-id {} {}", &spec.name, &service_name, &connector_id, parameters_as_string(&spec.parameters));
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
@@ -138,10 +136,8 @@ impl DestinationCommand {
             let message  = format!("Do you want to update the destination {} ?", id);
             let confirm = Printer::confirm(message.as_str());
 
-            let mut cmd:String = format!("di destination update {} --service-name {} ", &id, &service_name);
-            for parameter in spec.parameters.iter() {
-                cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
-            }
+            let cmd:String = format!("di destnation update {} --service-name {} {}", &spec.name, &service_name, parameters_as_string(&spec.parameters));
+
             Printer::print_command(cmd.as_str());
 
             if confirm.is_err() {
