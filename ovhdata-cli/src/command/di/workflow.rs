@@ -72,12 +72,26 @@ impl WorkflowCommand {
             input.destination_id.clone().unwrap()
         };
 
+        let interactive = missing_destination || missing_source;
+
+        let description = if interactive {
+            Printer::ask_input_string("Enter a description (press enter to skip)", input.description.clone(), true, None)
+        } else {
+            input.description.clone()
+        };
+
+        let schedule = if interactive {
+            Printer::ask_input_string("Enter a schedule (press enter to skip)", input.schedule.clone(), true, None)
+        } else {
+            input.schedule.clone()
+        };
+
         let spec = WorkflowSpec {
             name: input.name.clone(),
-            description: input.description.clone(),
+            description: description,
             source_id,
             destination_id,
-            schedule: input.schedule.clone(),
+            schedule: schedule,
             region: input.region.clone(),
             enabled: !input.disabled,
         };
