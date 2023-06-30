@@ -1389,7 +1389,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "ovhdata-cli"
-version = "0.1.4-dev"
+version = "0.1.5-dev"
 dependencies = [
  "chrono",
  "clap 4.3.8",
@@ -1425,7 +1425,7 @@ dependencies = [
 
 [[package]]
 name = "ovhdata-common"
-version = "0.1.4-dev"
+version = "0.1.5-dev"
 dependencies = [
  "async-trait",
  "bytes",

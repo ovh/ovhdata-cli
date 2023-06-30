@@ -40,6 +40,10 @@ impl SourceConnectorCommand {
             input.id.clone().unwrap()
         };
 
+        if interactive {
+            Printer::print_command(&format!("di source-connector get {} --service-name {} ", &id, &service_name));
+        }
+
         let connector = self.rcp_client.clone().di_source_connector(&service_name, &id).await?;
         Printer::print_object(&connector, &output)?;
         Ok(())

@@ -27,6 +27,10 @@ impl SourceMetadataCommand {
 
         let id = self.get_source_id(&service_name, &input.id).await?;
 
+        if input.id.is_none() {
+            Printer::print_command(&format!("di source metadata get {} --service-name {}", &id, &service_name));
+        }
+
         let spinner = Printer::start_spinner("Retrieving source metadata");
         let tables = self.rcp_client.clone().di_source_metadata(&service_name, &id).await?;
         Printer::stop_spinner(spinner);
@@ -39,6 +43,10 @@ impl SourceMetadataCommand {
         let service_name = Context::get().get_current_service_name().unwrap();
 
         let id = self.get_source_id(&service_name, &input.id).await?;
+
+        if input.id.is_none() {
+            Printer::print_command(&format!("di source metadata extract {} --service-name {}", &id, &service_name));
+        }
 
         let spinner = Printer::start_spinner("Extracting metadata from source");
         let tables = self.rcp_client.clone().di_source_metadata_post(&service_name, &id).await?;
