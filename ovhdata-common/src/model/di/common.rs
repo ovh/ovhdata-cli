@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::model::utils::{DescribedDateTime};
 
@@ -11,12 +12,15 @@ pub struct Parameter {
     pub value: String
 }
 
-pub fn parameters_as_string(parameters: &Vec<Parameter>) -> String {
-    let mut cmd = String::new();
-    for parameter in parameters.iter() {
-        cmd.push_str(&format!(" --parameter {}={}", parameter.name, parameter.value));
+pub struct ParametersWrapper(pub Vec<Parameter>);
+
+impl fmt::Display for ParametersWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0.iter()
+            .map(|param| format!("--parameter {}={}", param.name, param.value))
+            .collect::<Vec<_>>()
+            .join(" "))
     }
-    cmd
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]

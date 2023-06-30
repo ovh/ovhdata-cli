@@ -1,8 +1,8 @@
 use crossterm::style::{Stylize};
 use std::io::stdout;
 
+use ovhdata_common::model::di::common::ParametersWrapper;
 use ovhdata_common::model::di::source::{SourceSpec};
-use ovhdata_common::model::di::common::parameters_as_string;
 use ovhdata_common::ovhapi::{OVHapiV6Client, DiApi};
 
 use crate::config::Context;
@@ -100,10 +100,10 @@ impl SourceCommand {
         if interactive || parameters_len > input.parameters.len() {
             Printer::print_object(&spec, &output)?;
             let message  = format!("Do you want to update the source {} ?", id);
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&message);
 
-            let cmd:String = format!("di source update {} --service-name {} {}", &spec.name, &service_name, parameters_as_string(&spec.parameters));
-            Printer::print_command(cmd.as_str());
+            let cmd = format!("di source update {} --service-name {} {}", &spec.name, &service_name, ParametersWrapper(spec.parameters.clone()));
+            Printer::print_command(&cmd);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Update source canceled")));
@@ -147,11 +147,10 @@ impl SourceCommand {
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
             Printer::print_object(&spec, &output)?;
-            let message  = format!("Do you want to create the source {} ?", input.name.clone());
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&format!("Do you want to create the source {} ?", &input.name));
 
-            let cmd:String = format!("di source create {} --service-name {} --connector-id {} {}", &spec.name, &service_name, &connector_id, parameters_as_string(&spec.parameters));
-            Printer::print_command(cmd.as_str());
+            let cmd = format!("di source create {} --service-name {} --connector-id {} {}", &spec.name, &service_name, &connector_id, ParametersWrapper(spec.parameters.clone()));
+            Printer::print_command(&cmd);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Create source canceled")));
@@ -173,7 +172,7 @@ impl SourceCommand {
 
         if !input.force {
             let message  = format!("Are you sure you want to delete the source {} ?", source_id.clone().green());
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&message);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Delete source canceled")));

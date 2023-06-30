@@ -86,7 +86,7 @@ impl WorkflowCommand {
         if missing_destination || missing_source {
             Printer::print_object(&spec, &output)?;
             let message  = format!("Do you want to create the workflow {} ?", input.name.clone());
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&message);
 
             let mut cmd:String = format!("di workflow create {} --service-name {} --source-id {} --destination-id {} --region {}", &spec.name, &service_name, &spec.source_id, &spec.destination_id, &spec.region);
             if spec.description.clone().is_some() {
@@ -95,7 +95,7 @@ impl WorkflowCommand {
             if spec.schedule.clone().is_some() {
                 cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
             }
-            Printer::print_command(cmd.as_str());
+            Printer::print_command(&cmd);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Create workflow canceled")));
@@ -140,7 +140,7 @@ impl WorkflowCommand {
 
         if !input.force {
             let message  = format!("Are you sure you want to delete the workflow {} ?", workflow_id.clone().green());
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&message);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Delete workflow canceled")));
@@ -192,10 +192,9 @@ impl WorkflowCommand {
 
         if interactive_update {
             Printer::print_object(&spec, &output)?;
-            let message  = format!("Do you want to update the workflow {} ?", workflow_id);
-            let confirm = Printer::confirm(message.as_str());
+            let confirm = Printer::confirm(&format!("Do you want to update the workflow {} ?", &workflow_id));
 
-            let mut cmd:String = format!("di workflow update {} --service-name {} ", &workflow_id, &service_name);
+            let mut cmd = format!("di workflow update {} --service-name {} ", &workflow_id, &service_name);
             if spec.name.clone().is_some() {
                 cmd.push_str(&format!(" --name {}", spec.name.clone().unwrap()));
             }
@@ -208,7 +207,7 @@ impl WorkflowCommand {
             if spec.schedule.clone().is_some() {
                 cmd.push_str(&format!(" --schedule {}", spec.schedule.clone().unwrap()));
             }
-            Printer::print_command(cmd.as_str());
+            Printer::print_command(&cmd);
 
             if confirm.is_err() {
                 return Err(Error::Custom(format!("Update workflow canceled")));
@@ -250,7 +249,7 @@ impl WorkflowCommand {
             Printer::print_command(&format!("di workflow {}e {} --service-name {} ", &verb, &workflow_id, &service_name));
         }
         
-        let spinner = Printer::start_spinner(&format!("Workflow {}ing", &verb).as_str());
+        let spinner = Printer::start_spinner(&format!("Workflow {}ing", &verb));
         self.rcp_client.di_workflow_put(&service_name, &workflow_id, &spec).await?;
         Printer::stop_spinner(spinner);
 
