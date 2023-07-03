@@ -3,23 +3,28 @@ use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-use crate::model::utils::{DescribedDateTime};
+use crate::model::utils::DescribedDateTime;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameter {
     pub name: String,
-    pub value: String
+    pub value: String,
 }
 
 pub struct ParametersWrapper(pub Vec<Parameter>);
 
 impl fmt::Display for ParametersWrapper {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0.iter()
-            .map(|param| format!("--parameter {}={}", param.name, param.value))
-            .collect::<Vec<_>>()
-            .join(" "))
+        write!(
+            f,
+            "{}",
+            self.0
+                .iter()
+                .map(|param| format!("--parameter {}={}", param.name, param.value))
+                .collect::<Vec<_>>()
+                .join(" ")
+        )
     }
 }
 

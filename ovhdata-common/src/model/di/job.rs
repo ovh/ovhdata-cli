@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-use crate::model::utils::{DescribedDateTime, AgeEntity};
+use crate::model::utils::{AgeEntity, DescribedDateTime};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +25,7 @@ mod tests {
     use descriptor::{object_describe_to_string, table_describe_to_string};
 
     use crate::model::di::job::Job;
-    use crate::utils::util::datetime_micro;
+    use crate::utils::date::datetime_micro;
 
     fn create_job() -> Job {
         Job {

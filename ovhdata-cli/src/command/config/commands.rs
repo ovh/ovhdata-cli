@@ -1,12 +1,10 @@
 use ovhdata_common::config::ConfigName;
 use ovhdata_common::ovhapi::{OVHapiV6Client, ProjectApi};
 
-use crate::config::{custom_config_path, Config, SelectableItem, Context};
-use crate::opts::ConfigSubCommand;
+use crate::config::{custom_config_path, Config, Context, SelectableItem};
+use crate::options::ConfigSubCommand;
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::{Error, Result};
-
-
 
 pub struct ConfigCommand {
     rcp_client: OVHapiV6Client,
@@ -17,10 +15,11 @@ impl ConfigCommand {
         ConfigCommand { rcp_client: rcp }
     }
 
-
     pub async fn execute_command(&self, config_command: ConfigSubCommand) -> Result<()> {
         match config_command {
-            ConfigSubCommand::List(config_list) => self.list(config_list.output.unwrap_or_default().into()),
+            ConfigSubCommand::List(config_list) => {
+                self.list(config_list.output.unwrap_or_default().into())
+            }
             ConfigSubCommand::Get(config_get) => self.get(
                 config_get.config_name,
                 config_get.output.unwrap_or_default().into(),
@@ -29,9 +28,10 @@ impl ConfigCommand {
                 config_set.config_name,
                 config_set.output.unwrap_or_default().into(),
             ),
-            ConfigSubCommand::SetServiceName(config_set_service_name) => self.set_service_name(
-                &config_set_service_name.service_name,
-            ).await,
+            ConfigSubCommand::SetServiceName(config_set_service_name) => {
+                self.set_service_name(&config_set_service_name.service_name)
+                    .await
+            }
         }
     }
 
@@ -44,11 +44,7 @@ impl ConfigCommand {
             .map(|(config_name, config)| {
                 let is_selected = &all_config.current_config_name == config_name;
                 SelectableItem::new(
-                    Config::new(
-                        config_name.clone(),
-                        config.clone(),
-                        None,
-                    ),
+                    Config::new(config_name.clone(), config.clone(), None),
                     is_selected,
                 )
             })
@@ -87,43 +83,45 @@ impl ConfigCommand {
     }
 
     // Get config with interactive mode if necessary
-    fn get_config(&self, name: Option<String>) -> Result<(ConfigName, ovhdata_common::config::Config)> {
+    fn get_config(
+        &self,
+        name: Option<String>,
+    ) -> Result<(ConfigName, ovhdata_common::config::Config)> {
         let all_config = Config::get_all();
         let all_items = all_config
             .configs
             .iter()
-            .map(|(config_name, config)| {
-                Config::new(
-                    config_name.clone(),
-                    config.clone(),
-                    None,
-                )
-            })
+            .map(|(config_name, config)| Config::new(config_name.clone(), config.clone(), None))
             .collect::<Vec<Config>>();
 
-        let config_name = if name.is_some() {
-            ConfigName::from(name.unwrap())
+        let config_name = if let Some(conf_name) = name {
+            ConfigName::from(conf_name)
         } else {
             let selected_config = Printer::ask_select_table(&all_items, None)?;
             selected_config.name.clone()
         };
 
-        let config = all_config.get_config(config_name.clone()).ok_or(Error::Custom(format!("Unknown configuration")))?.clone();
-        Ok((config_name.clone(), config.clone()))
+        let config = all_config
+            .get_config(config_name.clone())
+            .ok_or(Error::custom("Unknown configuration"))?
+            .clone();
+        Ok((config_name, config))
     }
 
     /// Set the default service name to use for the current config
     async fn set_service_name(&self, input_service_name: &Option<String>) -> Result<()> {
-        let mut context = Context::get();
         let interactive = input_service_name.is_none();
 
         let service_name = if interactive {
             let projects = self.rcp_client.projects().await?;
-            Printer::ask_select_table(&projects, None)?.project_id.clone()
+            Printer::ask_select_table(&projects, None)?
+                .project_id
+                .clone()
         } else {
             input_service_name.clone().unwrap()
         };
 
+        let mut context = Context::get();
         context.set_service_name(service_name);
         context.save()?;
 

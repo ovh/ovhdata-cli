@@ -3,8 +3,8 @@ use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-use crate::model::utils::{DescribedDateTime, AgeEntity};
 use crate::model::di::common::Parameter;
+use crate::model::utils::{AgeEntity, DescribedDateTime};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
@@ -39,8 +39,8 @@ pub struct SourceSpec {
 mod tests {
     use descriptor::{object_describe_to_string, table_describe_to_string};
 
-    use crate::model::di::source::{Source, Parameter};
-    use crate::utils::util::datetime_micro;
+    use crate::model::di::source::{Parameter, Source};
+    use crate::utils::date::datetime_micro;
 
     fn create_source() -> Source {
         Source {
@@ -53,13 +53,13 @@ mod tests {
             parameters: vec![
                 Parameter {
                     name: "parameter_1".to_string(),
-                    value: "value_1".to_string()
+                    value: "value_1".to_string(),
                 },
                 Parameter {
                     name: "parameter_2".to_string(),
-                    value: "value_2".to_string()
-                }
-            ]
+                    value: "value_2".to_string(),
+                },
+            ],
         }
     }
 

@@ -1,4 +1,4 @@
-use ovhdata_common::ovhapi::{OVHapiV6Client, AuthApi};
+use ovhdata_common::ovhapi::{AuthApi, OVHapiV6Client};
 
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::Result;

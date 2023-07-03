@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::{Arguments};
+use std::fmt::Arguments;
 use std::io;
 use std::io::{Stderr, Stdout, Write};
 use std::ops::{Add, Not};
@@ -10,39 +10,40 @@ use crossterm::style::{
     Attribute, Color, SetAttribute, SetBackgroundColor, SetForegroundColor, Stylize,
 };
 use crossterm::terminal::{Clear, ClearType};
-use descriptor::{object_describe, Describe, Describer, table_describe_to_string};
-use dialoguer::{Confirm, Input, Password, Select, FuzzySelect, theme::ColorfulTheme};
+use descriptor::{object_describe, table_describe_to_string, Describe, Describer};
+use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input, Password, Select};
 use lazy_static::lazy_static;
 use pulldown_cmark::{Event, HeadingLevel, Parser, Tag};
 use serde::Serialize;
 use spinners::{Spinner, Spinners};
 
-use ovhdata_common::BUG;
 use ovhdata_common::model::di::common::Parameter;
 use ovhdata_common::model::di::connector::{ConnectorParameter, ConnectorValidator};
+use ovhdata_common::BUG;
 
 use crate::config::{Context, Toggle};
-use crate::opts::NameValue;
+use crate::options::NameValue;
 use crate::utils::{Error, Result};
 use crate::CLI_NAME;
 
-pub const HELP_MAIN: &'static str = include_str!("../../../doc/main-help.md");
-pub const HELP_LOGIN_HOW_TO: &'static str = include_str!("../../../doc/login-how-to.md");
-pub const HELP_NO_AUTH_HOW_TO: &'static str = include_str!("../../../doc/no-auth-how-to.md");
-pub const HELP_NO_SERVICE_NAME_HOW_TO: &'static str = include_str!("../../../doc/no-service-name-how-to.md");
-pub const HELP_LOGIN_SUCCESS: &'static str = include_str!("../../../doc/login-success.md");
-pub const HELP_COMPLETION_HOW_TO: &'static str = include_str!("../../../doc/completion-how-to.md");
-pub const HELP_UPGRADE: &'static str = include_str!("../../../doc/upgrade-info.md");
-pub const HELP_UPGRADE_MANDATORY: &'static str = include_str!("../../../doc/upgrade-mandatory.md");
+pub const HELP_MAIN: &str = include_str!("../../../doc/main-help.md");
+pub const HELP_LOGIN_HOW_TO: &str = include_str!("../../../doc/login-how-to.md");
+pub const HELP_NO_AUTH_HOW_TO: &str = include_str!("../../../doc/no-auth-how-to.md");
+pub const HELP_NO_SERVICE_NAME_HOW_TO: &str =
+    include_str!("../../../doc/no-service-name-how-to.md");
+pub const HELP_LOGIN_SUCCESS: &str = include_str!("../../../doc/login-success.md");
+pub const HELP_COMPLETION_HOW_TO: &str = include_str!("../../../doc/completion-how-to.md");
+pub const HELP_UPGRADE: &str = include_str!("../../../doc/upgrade-info.md");
+pub const HELP_UPGRADE_MANDATORY: &str = include_str!("../../../doc/upgrade-mandatory.md");
 
 #[cfg(target_os = "windows")]
-pub const VALID: &'static str = "";
+pub const VALID: &str = "";
 #[cfg(not(target_os = "windows"))]
-pub const VALID: &'static str = "✔ ";
+pub const VALID: &str = "✔ ";
 #[cfg(target_os = "windows")]
-pub const INVALID: &'static str = "";
+pub const INVALID: &str = "";
 #[cfg(not(target_os = "windows"))]
-pub const INVALID: &'static str = "✘ ";
+pub const INVALID: &str = "✘ ";
 
 lazy_static! {
     // Colored by default
@@ -52,7 +53,6 @@ lazy_static! {
 }
 
 pub struct Printer;
-
 
 impl Printer {
     pub fn start_spinner(message: &str) -> Option<Spinner> {
@@ -65,8 +65,8 @@ impl Printer {
     }
 
     pub fn stop_spinner(spinner: Option<Spinner>) {
-        if spinner.is_some() {
-            spinner.unwrap().stop_with_newline();
+        if let Some(mut spin) = spinner {
+            spin.stop_with_newline();
         }
     }
 
@@ -79,10 +79,13 @@ impl Printer {
             .interact()
             .map_err(|_| Error::UserInput)?;
 
-        return Ok(reply_index);
+        Ok(reply_index)
     }
 
-    pub fn ask_select_table<T: Describe>(data: &[T], default_selection: Option<String>) -> Result<&T> {
+    pub fn ask_select_table<T: Describe>(
+        data: &[T],
+        default_selection: Option<String>,
+    ) -> Result<&T> {
         let table = table_describe_to_string(data).unwrap();
         let mut table_entries: Vec<_> = table.split('\n').collect();
 
@@ -97,24 +100,27 @@ impl Printer {
             .with_initial_text(default_selection.unwrap_or_default())
             .interact_on(&Term::stderr())?;
 
-        let selected = data.get(selection);
-        if selected.is_none(){
-            return Err(Error::custom("Value not selected"));
+        if let Some(selected) = data.get(selection) {
+            Ok(selected)
+        } else {
+            Err(Error::custom("Value not selected"))
         }
-
-        Ok(selected.unwrap().clone())
     }
 
-    pub fn ask_connector_parameters(input: &Vec<NameValue>, api: Option<&Vec<Parameter>>, connector_parameters: &Vec<ConnectorParameter>) -> Result<Vec<Parameter>> {
+    pub fn ask_connector_parameters(
+        input: &[NameValue],
+        api: Option<&Vec<Parameter>>,
+        connector_parameters: &[ConnectorParameter],
+    ) -> Result<Vec<Parameter>> {
         let input_parameters: HashMap<String, Parameter> = input
             .iter()
             .map(|parameter| (parameter.clone().name, parameter.clone().into()))
             .collect::<HashMap<_, _>>();
 
-        let api_parameters: HashMap<String, Parameter> = if api.is_some() {
-            api.unwrap()
+        let api_parameters: HashMap<String, Parameter> = if let Some(parameters) = api {
+            parameters
                 .iter()
-                .map(|api_param | (api_param.clone().name, api_param.clone()))
+                .map(|api_param| (api_param.clone().name, api_param.clone()))
                 .collect::<HashMap<_, _>>()
         } else {
             HashMap::new()
@@ -124,9 +130,9 @@ impl Printer {
 
         // Non interactive mode
         // input_parameter have always the priority
-        if input_parameters.len() > 0 {
+        if !input_parameters.is_empty() {
             let value = Vec::from_iter(input_parameters.into_values());
-            return Ok(value)
+            return Ok(value);
         }
 
         // Interactive mode (input_parameter empty)
@@ -138,12 +144,7 @@ impl Printer {
             let api_param = api_parameters.get(&connector_parameter.name);
 
             // Update case -> api as default
-            // create ->
-            let current_value = if api_param.is_some() {
-                Some(api_param.unwrap().value.clone())
-            } else {
-                None
-            };
+            let current_value = api_param.map(|param| param.value.clone());
 
             let param = Printer::ask_parameter(connector_parameter, current_value).unwrap();
 
@@ -155,124 +156,170 @@ impl Printer {
         Ok(parameters)
     }
 
-    fn get_validator_help(type_name: &String, option_validator: &Option<ConnectorValidator>) -> String {
+    fn get_validator_help(
+        type_name: &str,
+        option_validator: &Option<ConnectorValidator>,
+    ) -> String {
         match option_validator {
-            Some(validator) => {
-                match type_name.as_str() {
-                    "string" => "None (string by default)".to_string(),
-                    "boolean" => "(true, True, false, False)".to_string(),
-                    "int" => {
-                        if validator.min == validator.max {
-                            "None (any integer without spaces)".to_string()
-                        }  else {
-                            format!("Min value={} , max value={}", validator.min,validator.max)
-                        }
+            Some(validator) => match type_name {
+                "string" => "None (string by default)".to_string(),
+                "boolean" => "(true, True, false, False)".to_string(),
+                "int" => {
+                    if validator.min == validator.max {
+                        "None (any integer without spaces)".to_string()
+                    } else {
+                        format!("Min value={} , max value={}", validator.min, validator.max)
                     }
-                    _ => "None (string by default)".to_string()
                 }
-            }
-            None => "None".to_string()
+                _ => "None (string by default)".to_string(),
+            },
+            None => "None".to_string(),
         }
     }
 
-    fn ask_parameter(connector_parameter: &ConnectorParameter, current_value: Option<String>) -> Result<Option<Parameter>> {
-        let prompt = format!("{}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n{}",
-                             "Enter parameter".blue(),
-                             "\u{251C} Name:".blue(),
-                             connector_parameter.name.clone(),
-                             "\u{251C} Type:".blue(),
-                             connector_parameter.type_name.clone(),
-                             "\u{251C} Validator:".blue(),
-                             Printer::get_validator_help(&connector_parameter.type_name, &connector_parameter.validator),
-                             "\u{251C} Description:".blue(),
-                             connector_parameter.description.clone(),
-                             "\u{2514} Mandatory:".blue(),
-                             connector_parameter.mandatory,
-                             connector_parameter.name.clone());
+    fn ask_parameter(
+        connector_parameter: &ConnectorParameter,
+        current_value: Option<String>,
+    ) -> Result<Option<Parameter>> {
+        let prompt = format!(
+            "{}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n{}",
+            "Enter parameter".blue(),
+            "\u{251C} Name:".blue(),
+            connector_parameter.name.clone(),
+            "\u{251C} Type:".blue(),
+            connector_parameter.type_name.clone(),
+            "\u{251C} Validator:".blue(),
+            Printer::get_validator_help(
+                &connector_parameter.type_name,
+                &connector_parameter.validator
+            ),
+            "\u{251C} Description:".blue(),
+            connector_parameter.description.clone(),
+            "\u{2514} Mandatory:".blue(),
+            connector_parameter.mandatory,
+            connector_parameter.name.clone()
+        );
 
-        let default_value = if connector_parameter.mandatory && connector_parameter.default.is_some() {
-            connector_parameter.clone().default
-        } else {
-            None
-        };
+        let default_value =
+            if connector_parameter.mandatory && connector_parameter.default.is_some() {
+                connector_parameter.clone().default
+            } else {
+                None
+            };
 
-        let parameter_value = match  connector_parameter.type_name.clone().as_str() {
+        let parameter_value = match connector_parameter.type_name.clone().as_str() {
             "string" => {
-                let value = Printer::ask_input_string(&prompt, current_value.clone(), connector_parameter.mandatory.not(), default_value);
+                let value = Printer::ask_input_string(
+                    &prompt,
+                    current_value.clone(),
+                    connector_parameter.mandatory.not(),
+                    default_value,
+                );
                 if value.is_some() {
                     value
-                } else if !connector_parameter.mandatory && value.is_none() && current_value.clone().is_some() {
+                } else if !connector_parameter.mandatory
+                    && value.is_none()
+                    && current_value.is_some()
+                {
                     // current value / none from keyboard and not mandatory, return empty string (delete it)
                     Some("".to_string())
                 } else {
                     None
                 }
-            },
+            }
             "int" => {
                 let validator = connector_parameter.validator.clone().unwrap();
-                let value = Printer::ask_input_integer(&prompt, current_value.clone(), connector_parameter.mandatory.not(), &validator, default_value);
+                let value = Printer::ask_input_integer(
+                    &prompt,
+                    current_value.clone(),
+                    connector_parameter.mandatory.not(),
+                    &validator,
+                    default_value,
+                );
                 if value.is_some() {
                     value
-                } else if !connector_parameter.mandatory && value.is_none() && current_value.clone().is_some() {
+                } else if !connector_parameter.mandatory
+                    && value.is_none()
+                    && current_value.is_some()
+                {
                     // current value / none from keyboard and not mandatory, return empty string (delete it)
                     Some("".to_string())
                 } else {
                     None
                 }
-            },
+            }
             "boolean" => {
-                let value : bool = if current_value.is_some() {
-                    current_value.unwrap().to_lowercase().parse().unwrap_or_default()
-                } else if default_value.is_some() {
-                    default_value.unwrap().to_lowercase().parse().unwrap_or_default()
+                let value: bool = if let Some(c_value) = current_value {
+                    c_value.to_lowercase().parse().unwrap_or_default()
+                } else if let Some(d_value) = default_value {
+                    d_value.to_lowercase().parse().unwrap_or_default()
                 } else {
                     false
                 };
 
                 let value = Printer::ask_input_boolean(&prompt, value);
                 Some(value.unwrap().to_string())
-
-            },
+            }
             _ => {
-                return Err(Error::Custom(format!("Unsupported parameter type {}!", connector_parameter.type_name.clone())))
+                return Err(Error::Custom(format!(
+                    "Unsupported parameter type {}!",
+                    connector_parameter.type_name
+                )));
             }
         };
 
         // Convert the value (string) into parameter
-        if parameter_value.is_some() {
-            let param = Parameter { name: connector_parameter.name.clone(), value: parameter_value.clone().unwrap() };
+        if let Some(value) = parameter_value {
+            let param = Parameter {
+                name: connector_parameter.name.clone(),
+                value,
+            };
             Ok(Option::from(param))
         } else {
             Ok(None)
         }
     }
 
-    pub fn ask_input_string(prompt: &str, initial_text: Option<String>, allow_empty: bool, default: Option<String> ) -> Option<String> {
+    pub fn ask_input_string(
+        prompt: &str,
+        initial_text: Option<String>,
+        allow_empty: bool,
+        default: Option<String>,
+    ) -> Option<String> {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding.with_prompt(prompt)
+        input_binding
+            .with_prompt(prompt)
             .report(false)
             .allow_empty(allow_empty);
 
-        if default.is_some() {
-            input_binding.default(default.unwrap());
+        if let Some(default_input) = default {
+            input_binding.default(default_input);
         }
 
-        if initial_text.is_some() {
-            input_binding.with_initial_text(initial_text.unwrap());
+        if let Some(text) = initial_text {
+            input_binding.with_initial_text(text);
         }
 
-        return input_binding.interact_text()
-            .map(|s: String| s.is_empty().not().then(|| s))
-            .unwrap();
+        input_binding
+            .interact_text()
+            .map(|s: String| s.is_empty().not().then_some(s))
+            .unwrap()
     }
 
-    fn ask_input_integer(prompt: &str, initial_text: Option<String>, allow_empty: bool, validator: &ConnectorValidator, default: Option<String>) -> Option<String> {
+    fn ask_input_integer(
+        prompt: &str,
+        initial_text: Option<String>,
+        allow_empty: bool,
+        validator: &ConnectorValidator,
+        default: Option<String>,
+    ) -> Option<String> {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding.with_prompt(prompt)
+        input_binding
+            .with_prompt(prompt)
             .report(false)
             .allow_empty(allow_empty)
             .validate_with({
@@ -281,41 +328,34 @@ impl Printer {
                     match test {
                         Ok(value) => {
                             if value < validator.min {
-                                let message = format!("The value can not be lower than {}", validator.min);
-                                Err(message.clone())
+                                Err(format!("The value can not be lower than {}", validator.min))
                             } else if value > validator.max {
-                                Err(format!("The value can not be upper than {}", validator.max).clone())
+                                Err(format!("The value can not be upper than {}", validator.max))
                             } else {
                                 Ok(())
                             }
-                        },
-                        Err(_) => Err("Invalid value, this is not an integer".to_string().clone()),
+                        }
+                        Err(_) => Err("Invalid value, this is not an integer".to_string()),
                     }
                 }
             });
 
-        if default.is_some() {
-            input_binding.default(default.unwrap());
+        if let Some(default_input) = default {
+            input_binding.default(default_input);
         }
 
-        if initial_text.is_some() {
-            input_binding.with_initial_text(initial_text.unwrap());
+        if let Some(text) = initial_text {
+            input_binding.with_initial_text(text);
         }
 
-        return input_binding.interact_text()
-            .map(|s: String| s.is_empty().not().then(|| s))
-            .unwrap();
+        input_binding
+            .interact_text()
+            .map(|s: String| s.is_empty().not().then_some(s))
+            .unwrap()
     }
 
-    pub fn ask_input_boolean(prompt: &str, default: bool ) -> Result<bool> {
-        match Printer::ask_select(
-            prompt,
-            &[
-                "False",
-                "True",
-            ],
-            default as usize
-        ).unwrap() {
+    pub fn ask_input_boolean(prompt: &str, default: bool) -> Result<bool> {
+        match Printer::ask_select(prompt, &["False", "True"], default as usize).unwrap() {
             0 => Ok(false),
             1 => Ok(true),
             _ => Err(Error::UserInput), // Unreachable
@@ -328,8 +368,8 @@ impl Printer {
 
         input_binding.with_prompt(prompt);
 
-        if initial_text.is_some() {
-            input_binding.with_initial_text(initial_text.unwrap());
+        if let Some(text) = initial_text {
+            input_binding.with_initial_text(text);
         }
         input_binding.interact().map_err(|_| Error::UserInput)
     }
@@ -337,7 +377,8 @@ impl Printer {
     pub fn confirm(message: &str) -> Result<bool> {
         if !Confirm::with_theme(&ColorfulTheme::default())
             .with_prompt(message)
-            .interact()? {
+            .interact()?
+        {
             return Err(Error::custom("Operation cancelled by user"));
         }
         Ok(true)
@@ -390,7 +431,7 @@ impl Printer {
     {
         match output {
             Output::Table(headers) => {
-                if data.len() > 0 {
+                if !data.is_empty() {
                     Describer::describe_list_with_header(
                         data,
                         headers.as_slice(),
@@ -406,7 +447,7 @@ impl Printer {
                     object_describe(obj, &mut stdout())?;
                     println!();
                 }
-            },
+            }
         }
         Ok(())
     }
@@ -420,14 +461,14 @@ impl Printer {
 
     pub fn print_yaml<T: Serialize>(data: &T) -> Result<()> {
         serde_yaml::to_writer(io::stdout(), &data).map_err(Error::custom)?;
-
         Ok(())
     }
 
     pub fn print_command(command: &str) {
         println!();
-        writeln!(stdout(), "{}\n> {} {}\n (consider adding the --no-spinner, --no-color and -f options to use this command in a script)\n", "Running the following command:", CLI_NAME.bold(), command.bold())
-            .expect("can't write on stdout");
+        writeln!(stdout(), "Running the following command:").unwrap();
+        writeln!(stdout(), "> {} {}", CLI_NAME.bold(), command.bold()).unwrap();
+        writeln!(stdout(), "(consider adding the --no-spinner, --no-color and -f options to use this command in a script)").unwrap();
     }
 
     pub fn print_help(markdown: &str, toggle: Toggle) {
@@ -520,30 +561,30 @@ impl Printer {
                         write!(&mut output, "\n\n").unwrap();
                     }
                     Tag::Heading(HeadingLevel::H1, ..) => {
-                        if let Some(_) = md_style.h1 {
+                        if md_style.h1.is_some() {
                             write!(&mut output, "{}", SetForegroundColor(foreground)).unwrap();
                         }
                         write!(&mut output, "{}\n\n", Attribute::NormalIntensity).unwrap();
                     }
                     Tag::Heading(HeadingLevel::H2, ..) => {
-                        if let Some(_) = md_style.h2 {
-                            write!(&mut output, "{}\n", SetForegroundColor(foreground)).unwrap();
+                        if md_style.h2.is_some() {
+                            writeln!(&mut output, "{}", SetForegroundColor(foreground)).unwrap();
                         }
                     }
                     Tag::CodeBlock(_) => {
-                        write!(&mut output, "\n").unwrap();
+                        writeln!(&mut output).unwrap();
                     }
                     Tag::List(_) => {
-                        write!(&mut output, "\n").unwrap();
+                        writeln!(&mut output).unwrap();
                     }
                     Tag::Item => {
-                        write!(&mut output, "\n").unwrap();
+                        writeln!(&mut output).unwrap();
                     }
                     Tag::Strong => {
                         write!(&mut output, "{}", Attribute::NormalIntensity).unwrap();
                     }
                     Tag::Emphasis => {
-                        if let Some(_) = md_style.emphasis {
+                        if md_style.emphasis.is_some() {
                             write!(&mut output, "{}", SetForegroundColor(foreground)).unwrap();
                         }
                     }
@@ -556,7 +597,7 @@ impl Printer {
             }
         }
 
-        if let Some(_) = md_style.background {
+        if md_style.background.is_some() {
             write!(
                 &mut output,
                 "{}{}",
@@ -565,7 +606,7 @@ impl Printer {
             )
             .unwrap();
         }
-        if let Some(_) = md_style.foreground {
+        if md_style.foreground.is_some() {
             write!(&mut output, "{}", SetForegroundColor(Color::Reset)).unwrap();
         }
 
@@ -575,11 +616,8 @@ impl Printer {
                 // for applying bg color on the whole line.
                 // Finalize with a last "Erase in Line" for restoring the default bg color on next line.
                 Some(_) => rendered
-                    .replace(
-                        "\n",
-                        format!("{}\n", Clear(ClearType::UntilNewLine)).as_str(),
-                    )
-                    .add(format!("{}", Clear(ClearType::UntilNewLine)).as_str()),
+                    .replace('\n', &format!("{}\n", Clear(ClearType::UntilNewLine)))
+                    .add(&format!("{}", Clear(ClearType::UntilNewLine))),
                 None => rendered,
             })
             .unwrap()
@@ -614,7 +652,7 @@ pub struct PrinterStdout(Stdout, bool);
 
 impl Write for PrinterStdout {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.0.write(&buf)
+        self.0.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -644,7 +682,7 @@ pub struct PrinterStdErr(Stderr, bool);
 
 impl Write for PrinterStdErr {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.0.write(&buf)
+        self.0.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {

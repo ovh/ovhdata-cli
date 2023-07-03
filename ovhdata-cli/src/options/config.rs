@@ -1,4 +1,4 @@
-use crate::opts::{OutputList, OutputObject};
+use crate::options::{OutputList, OutputObject};
 use clap::builder::{PossibleValuesParser, TypedValueParser};
 use clap::Parser;
 

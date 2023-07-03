@@ -4,8 +4,10 @@ use clap_complete::Shell;
 use lazy_static::lazy_static;
 use std::str::FromStr;
 
-use crate::opts::{ConfigShim, DiShim, ParseError, ParseResult};
-use crate::utils::ui::printer::{Output, Printer, HELP_LOGIN_HOW_TO, HELP_MAIN, HELP_COMPLETION_HOW_TO};
+use crate::options::{ConfigShim, DiShim, ParseError, ParseResult};
+use crate::utils::ui::printer::{
+    Output, Printer, HELP_COMPLETION_HOW_TO, HELP_LOGIN_HOW_TO, HELP_MAIN,
+};
 
 lazy_static! {
     static ref BEFORE_HELP_MAIN: String = Printer::gen_help(HELP_MAIN);
@@ -44,7 +46,7 @@ pub enum SubCommand {
     /// Controls configuration of ovhdata-cli
     Config(ConfigShim),
     /// Upgrade the CLI
-    Upgrade(Upgrade),    
+    Upgrade(Upgrade),
     /// Displays logs of a command executed by the cli
     Debug(Debug),
     /// Di (Data integration) product Subcommand
@@ -59,9 +61,7 @@ pub enum SubCommand {
 }
 
 #[derive(Parser)]
-pub struct Logout {
-
-}
+pub struct Logout {}
 
 #[derive(Parser)]
 pub struct Login {

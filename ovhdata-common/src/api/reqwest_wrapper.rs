@@ -9,8 +9,8 @@ use tracing::{debug, error, info};
 use uuid::Uuid;
 
 use crate::api::{Error, Result};
-use crate::model::utils::{ResponseError};
-use crate::{REQUEST_ID};
+use crate::model::utils::ResponseError;
+use crate::REQUEST_ID;
 
 pub const EMPTY_BODY: Option<&()> = None;
 
@@ -38,7 +38,7 @@ pub async fn send_request(
     request: RequestWrapper,
     allowed_statuses: &[StatusCode],
 ) -> Result<ResponseWrapper> {
-    let request_id = request.request_id().clone();
+    let request_id = *request.request_id();
     let request_method = request.method().clone();
     info!(
         http = "request",
@@ -129,9 +129,9 @@ impl DerefMut for RequestWrapper {
     }
 }
 
-impl Into<Request> for RequestWrapper {
-    fn into(self) -> Request {
-        self.1
+impl From<RequestWrapper> for Request {
+    fn from(val: RequestWrapper) -> Self {
+        val.1
     }
 }
 

@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-use crate::model::utils::{OptionDescribedDateTime};
+use crate::model::utils::OptionDescribedDateTime;
 
 pub type TablesMeta = Vec<TableMeta>;
 
@@ -35,15 +35,14 @@ pub struct Metadata {
     pub max: i64,
 }
 
-
 #[cfg(test)]
 mod tests {
-    use descriptor::{object_describe_to_string};
+    use descriptor::object_describe_to_string;
 
-    use crate::model::di::source_metadata::{TableMeta, Metadata};
-    use crate::utils::util::datetime_micro;
+    use crate::model::di::source_metadata::{Metadata, TableMeta};
+    use crate::utils::date::datetime_micro;
 
-    fn create_metadata () -> TableMeta {
+    fn create_metadata() -> TableMeta {
         TableMeta {
             table_name: "table-name".to_string(),
             status: "SUCCESS".to_string(),
@@ -57,16 +56,16 @@ mod tests {
                     type_name: "num".to_string(),
                     cardinality: 788,
                     min: 0,
-                    max: 788
+                    max: 788,
                 },
                 Metadata {
                     name: "some_column".to_string(),
                     type_name: "txt".to_string(),
                     cardinality: 580,
                     min: 0,
-                    max: 911
+                    max: 911,
                 },
-            ]
+            ],
         }
     }
 
@@ -93,7 +92,7 @@ Metadata:
         )
     }
 
-    fn create_metadata_empty () -> TableMeta {
+    fn create_metadata_empty() -> TableMeta {
         TableMeta {
             table_name: "table-name".to_string(),
             status: "PROCESSING".to_string(),
@@ -101,7 +100,7 @@ Metadata:
             error_code: None,
             started_at: Some(datetime_micro(2021, 6, 3, 12, 22, 46, 107055)),
             ended_at: None,
-            metadata: Vec::new()
+            metadata: Vec::new(),
         }
     }
 
@@ -126,7 +125,7 @@ Metadata:
         )
     }
 
-    fn create_metadata_error () -> TableMeta {
+    fn create_metadata_error() -> TableMeta {
         TableMeta {
             table_name: "table-name".to_string(),
             status: "ERROR".to_string(),
@@ -134,7 +133,7 @@ Metadata:
             error_code: Some("404".to_string()),
             started_at: None,
             ended_at: None,
-            metadata: Vec::new()
+            metadata: Vec::new(),
         }
     }
 
@@ -158,5 +157,4 @@ Metadata:
 "#
         )
     }
-
 }

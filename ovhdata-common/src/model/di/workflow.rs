@@ -1,8 +1,8 @@
+use crate::model::di::common::{ErrorDetails, Parameter};
+use crate::model::utils::{AgeEntity, DescribedDateTime};
+use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
-use crate::model::utils::{DescribedDateTime, AgeEntity};
-use crate::model::di::common::{ErrorDetails, Parameter};
-use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
@@ -58,8 +58,8 @@ pub struct JobPost {
 mod tests {
     use descriptor::{object_describe_to_string, table_describe_to_string};
 
-    use crate::utils::util::datetime_micro;
-    use crate::model::di::workflow::{Workflow};
+    use crate::model::di::workflow::Workflow;
+    use crate::utils::date::datetime_micro;
 
     fn create_workflow() -> Workflow {
         Workflow {

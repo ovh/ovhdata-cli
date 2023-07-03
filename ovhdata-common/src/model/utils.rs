@@ -1,13 +1,13 @@
 use std::fmt::{Display, Formatter};
 
+use crate::utils::date::{age, duration};
 use chrono::{DateTime, Utc};
 use descriptor::{Describe, Descriptor};
 use serde::{Deserialize, Serialize};
-use crate::utils::util::{age, duration};
 
-use crate::model::di::source::Source;
 use crate::model::di::destination::Destination;
 use crate::model::di::job::Job;
+use crate::model::di::source::Source;
 use crate::model::di::workflow::Workflow;
 
 pub const DEFAULT_PAGE_SIZE: u32 = 100;
@@ -99,7 +99,7 @@ impl From<&Destination> for AgeEntity {
         Self {
             age: Some(age(&d.creation_date)),
             last_update: Some(age(&d.last_update_date.unwrap_or(Utc::now()))),
-            duration:None,
+            duration: None,
             last_execution: None,
         }
     }
@@ -110,7 +110,7 @@ impl From<&Job> for AgeEntity {
         Self {
             age: Some(age(&j.created_at)),
             last_update: None,
-            duration:Some(duration(&j.started_at, &j.ended_at)),
+            duration: Some(duration(&j.started_at, &j.ended_at)),
             last_execution: None,
         }
     }
@@ -121,7 +121,7 @@ impl From<&Workflow> for AgeEntity {
         Self {
             age: None,
             last_update: None,
-            duration:None,
+            duration: None,
             last_execution: Some(age(&w.last_execution_date.unwrap_or(Utc::now()))),
         }
     }
@@ -148,9 +148,7 @@ impl From<&DateTime<Utc>> for DescribedDateTime {
 impl From<&Option<DateTime<Utc>>> for DescribedDateTime {
     fn from(optional_datetime: &Option<DateTime<Utc>>) -> Self {
         let datetime = optional_datetime.unwrap_or(Utc::now());
-        DescribedDateTime {
-            datetime: datetime,
-        }
+        DescribedDateTime { datetime }
     }
 }
 

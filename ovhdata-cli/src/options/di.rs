@@ -1,8 +1,7 @@
-use crate::opts::{OutputList, OutputObject};
-use crate::opts::utils::NameValue;
+use crate::options::utils::NameValue;
+use crate::options::{OutputList, OutputObject};
 use clap::builder::{PossibleValuesParser, TypedValueParser};
 use clap::Parser;
-
 
 #[derive(Parser)]
 pub struct DiShim {
@@ -327,7 +326,7 @@ pub struct JobStop {
     pub id: Option<String>,
     /// Workflow ID
     #[clap(long)]
-    pub workflow_id: Option<String>
+    pub workflow_id: Option<String>,
 }
 
 #[derive(Parser)]
