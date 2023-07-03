@@ -1,10 +1,10 @@
-use ovhdata_common::model::di::source_metadata::{TableMeta};
-use ovhdata_common::ovhapi::{OVHapiV6Client, DiApi};
+use ovhdata_common::model::di::source_metadata::TableMeta;
+use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 
 use crate::config::Context;
-use crate::opts::{SourceGet, SourceSubMetaCommands};
+use crate::options::{SourceGet, SourceSubMetaCommands};
 use crate::utils::ui::printer::{Output, Printer};
-use crate::utils::{Result};
+use crate::utils::Result;
 
 pub struct SourceMetadataCommand {
     rcp_client: OVHapiV6Client,
@@ -17,8 +17,14 @@ impl SourceMetadataCommand {
 
     pub async fn execute_command(&self, commands: SourceSubMetaCommands) -> Result<()> {
         match commands {
-            SourceSubMetaCommands::Get(source_get) => { self.get(&source_get, source_get.output.unwrap_or_default().into()).await }
-            SourceSubMetaCommands::Extract(source_get) => { self.extract(&source_get, source_get.output.unwrap_or_default().into()).await }
+            SourceSubMetaCommands::Get(source_get) => {
+                self.get(&source_get, source_get.output.unwrap_or_default().into())
+                    .await
+            }
+            SourceSubMetaCommands::Extract(source_get) => {
+                self.extract(&source_get, source_get.output.unwrap_or_default().into())
+                    .await
+            }
         }
     }
 
@@ -28,11 +34,18 @@ impl SourceMetadataCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            Printer::print_command(&format!("di source metadata get {} --service-name {}", &id, &service_name));
+            Printer::print_command(&format!(
+                "di source metadata get {} --service-name {}",
+                &id, &service_name
+            ));
         }
 
         let spinner = Printer::start_spinner("Retrieving source metadata");
-        let tables = self.rcp_client.clone().di_source_metadata(&service_name, &id).await?;
+        let tables = self
+            .rcp_client
+            .clone()
+            .di_source_metadata(&service_name, &id)
+            .await?;
         Printer::stop_spinner(spinner);
 
         Printer::print_list::<TableMeta>(tables.as_slice(), &output)?;
@@ -45,23 +58,29 @@ impl SourceMetadataCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            Printer::print_command(&format!("di source metadata extract {} --service-name {}", &id, &service_name));
+            Printer::print_command(&format!(
+                "di source metadata extract {} --service-name {}",
+                &id, &service_name
+            ));
         }
 
         let spinner = Printer::start_spinner("Extracting metadata from source");
-        let tables = self.rcp_client.clone().di_source_metadata_post(&service_name, &id).await?;
+        let tables = self
+            .rcp_client
+            .clone()
+            .di_source_metadata_post(&service_name, &id)
+            .await?;
         Printer::stop_spinner(spinner);
 
         Printer::print_list::<TableMeta>(tables.as_slice(), &output)?;
         Ok(())
     }
 
-    
-    async fn get_source_id(&self, service_name: &String, input_id: &Option<String>) -> Result<String> {
+    async fn get_source_id(&self, service_name: &str, input_id: &Option<String>) -> Result<String> {
         let interactive = input_id.is_none();
 
         let id = if interactive {
-            let sources = self.rcp_client.clone().di_sources(&service_name).await?;
+            let sources = self.rcp_client.clone().di_sources(service_name).await?;
 
             Printer::ask_select_table(&sources, None)?.id.clone()
         } else {

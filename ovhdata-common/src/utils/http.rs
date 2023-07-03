@@ -60,7 +60,7 @@ impl FromStr for Url {
         match url::Url::parse(input) {
             Ok(url) if !url.cannot_be_a_base() => Ok(Url(url)),
             Ok(url) => Err(UrlError::CannotBeABase(url)),
-            Err(error) => Err(UrlError::ParseError(input.to_string(), error.into())),
+            Err(error) => Err(UrlError::ParseError(input.to_string(), error)),
         }
     }
 }
@@ -77,9 +77,9 @@ impl From<url::Url> for Url {
     }
 }
 
-impl Into<url::Url> for Url {
-    fn into(self) -> url::Url {
-        self.0
+impl From<Url> for url::Url {
+    fn from(val: Url) -> Self {
+        val.0
     }
 }
 

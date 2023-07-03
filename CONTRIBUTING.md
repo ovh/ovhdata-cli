@@ -13,12 +13,35 @@ pay attention to a few things:
  
 This is a set of recommendations on how to design and present APIs for the Rust programming language. They are authored largely by the Rust library team, based on experiences building the Rust standard library and other crates in the Rust ecosystem.
 
-Read them here.
- 
+Read them [here](https://github.com/rust-lang/rustfmt)
+
+## Code Style
+The code linter used is `cargo clippy`, all warning have to be fixed before merge a PR.
+
+## Commit titles 
+All commit titles must respect the following format.  Warning, the first commits in this project did not have this rule, please don't copy them. 
+
+```[ISSUE][COMMIT_TYPE] Message```
+
+The issue may be optional (build and release commits for example).
+Please use the following commit types.
+
+* feat – a new feature is introduced with the changes
+* fix – a bug fix has occurred
+* core – changes that do not relate to a fix or feature and don't modify src or test files (for example updating dependencies)
+* refactor – refactored code that neither fixes a bug nor adds a feature
+* docs – updates to documentation such as a the README or other markdown files
+* style – changes that do not affect the meaning of the code, likely related to code formatting such as white-space, missing semi-colons, and so on.
+* test – including new or correcting previous tests
+* perf – performance improvements
+* ci – continuous integration related
+* build – changes that affect the build system or external dependencies
+* revert – reverts a previous commit
+
 # Submitting Modifications
  
-The contributions should be submitted through Github Pull Requests
-and follow the DCO which is defined below.
+The contributions should be submitted through Github Pull Requests and follow the DCO which is defined below.
+Before merge, any PR must be squashed with a single commit per commit type.  
  
 # Licensing for new files
  

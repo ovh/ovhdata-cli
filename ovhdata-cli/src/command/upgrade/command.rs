@@ -6,16 +6,16 @@ use std::process::Command;
 use chrono::{Duration, Utc};
 use clap::crate_version;
 use crossterm::style::Stylize;
-use descriptor::{Descriptor};
+use descriptor::Descriptor;
 use filetime::FileTime;
 use futures::StreamExt;
 use regex::Regex;
-use reqwest::Client;
 use reqwest::header::USER_AGENT;
+use reqwest::Client;
 use semver::Version;
-use serde::{Deserialize};
-use tokio::fs::{File};
-use tokio::io::{AsyncWriteExt};
+use serde::Deserialize;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 
 use ovhdata_common::BUG;
 
@@ -30,9 +30,7 @@ static OS: &str = "linux";
 #[cfg(target_os = "windows")]
 static OS: &str = "windows";
 
-
 pub struct Upgrade {}
-
 
 #[derive(Debug, Clone, Deserialize, Descriptor)]
 pub struct GithubAsset {
@@ -48,12 +46,10 @@ pub struct GithubRelease {
     pub assets: Vec<GithubAsset>,
 }
 
-
 impl Upgrade {
     pub fn new() -> Self {
         Self {}
     }
-
 
     pub async fn check_upgrade(&self) -> Result<()> {
         // Check if the CLI is already up to date
@@ -61,7 +57,8 @@ impl Upgrade {
         let current_version = Version::parse(crate_version!()).expect(BUG);
 
         // Banner on break changes
-        if current_version.minor < last_version.minor || current_version.major < last_version.major {
+        if current_version.minor < last_version.minor || current_version.major < last_version.major
+        {
             Printer::print_help(HELP_UPGRADE_MANDATORY, Toggle::NoToggle);
         }
 
@@ -83,7 +80,10 @@ impl Upgrade {
         }
 
         // Banner on break changes
-        if !quiet && (current_version.minor < last_version.minor || current_version.major < last_version.major) {
+        if !quiet
+            && (current_version.minor < last_version.minor
+                || current_version.major < last_version.major)
+        {
             Printer::print_help(HELP_UPGRADE, Toggle::NoToggle);
         }
 
@@ -95,25 +95,23 @@ impl Upgrade {
             );
             let choices = ["Yes", "No", "Always", "Never"];
             match Printer::ask_select(&message, &choices, 0) {
-                Ok(choice) => {
-                    match choices[choice] {
-                        "No" => {
-                            return Ok(());
-                        }
-                        "Always" => {
-                            let mut context = Context::get();
-                            context.features.confirm_before_upgrade = false;
-                            context.save()?;
-                        }
-                        "Never" => {
-                            let mut context = Context::get();
-                            context.features.auto_upgrade = false;
-                            context.save()?;
-                            return Ok(());
-                        }
-                        _ => {}
+                Ok(choice) => match choices[choice] {
+                    "No" => {
+                        return Ok(());
                     }
-                }
+                    "Always" => {
+                        let mut context = Context::get();
+                        context.features.confirm_before_upgrade = false;
+                        context.save()?;
+                    }
+                    "Never" => {
+                        let mut context = Context::get();
+                        context.features.auto_upgrade = false;
+                        context.save()?;
+                        return Ok(());
+                    }
+                    _ => {}
+                },
                 Err(_) => {
                     return Ok(());
                 }
@@ -127,7 +125,10 @@ impl Upgrade {
     pub async fn upgrade_os(&self, quiet: bool, _last_version: &Version) -> Result<()> {
         if !quiet {
             eprintln!("Auto-upgrade is not available for Windows yet.");
-            eprintln!("Please download the new version of the CLI at {}", Self::get_binary_url().await?);
+            eprintln!(
+                "Please download the new version of the CLI at {}",
+                Self::get_binary_url().await?
+            );
 
             Printer::eprintln_fail("Upgrade canceled.");
         }
@@ -140,13 +141,14 @@ impl Upgrade {
 
         let spinner = Printer::start_spinner(&format!(
             "Downloading new version {}",
-            last_version.to_string().green()));
+            last_version.to_string().green()
+        ));
 
         let mut tmp_dir = std::env::temp_dir();
-        tmp_dir.push(format!("{}.{}.tmp", CLI_NAME, last_version.to_string()));
+        tmp_dir.push(format!("{}.{}.tmp", CLI_NAME, last_version));
         let mut file = File::create(tmp_dir.clone()).await?;
 
-        let response = reqwest::get(&Upgrade::get_binary_url().await? ).await?;
+        let response = reqwest::get(&Upgrade::get_binary_url().await?).await?;
 
         let mut stream = response.bytes_stream();
         while let Some(bytes) = stream.next().await {
@@ -161,12 +163,10 @@ impl Upgrade {
         let perms = fs::metadata(&current_exe_path)?.permissions();
         file.set_permissions(perms).await?;
 
-
         fs::remove_file(&current_exe_path)?;
         fs::copy(&tmp_dir, &current_exe_path)?;
 
-        let message = format!("New version installed", );
-        Printer::println_success(&mut stderr(), &message);
+        Printer::println_success(&mut stderr(), "New version installed");
 
         // Execute updated executable (program stops there)
         // If quiet is false the command is 'upgrade', so no need to launch the command again
@@ -194,7 +194,7 @@ impl Upgrade {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     async fn get_binary_url() -> Result<String> {
@@ -204,7 +204,8 @@ impl Upgrade {
         let github_release = Self::get_last_release().await?;
 
         // Return the download url corresponding to the OS
-        github_release.assets
+        github_release
+            .assets
             .iter()
             .filter(|asset| re.is_match(&asset.name))
             .map(|asset| asset.browser_download_url.clone())
@@ -226,7 +227,10 @@ impl Upgrade {
         }
 
         // get last version from remote
-        let client = Client::builder().build()?.get(url).header(USER_AGENT, "request");
+        let client = Client::builder()
+            .build()?
+            .get(url)
+            .header(USER_AGENT, "request");
         let body_response = client.send().await?.text().await?;
 
         // parse version
@@ -247,7 +251,7 @@ impl Upgrade {
 
         match Version::parse(&last_release.tag_name) {
             Ok(valid_remote_version) => Ok(valid_remote_version),
-            Err(_) => Err(Error::Custom(String::from("failed to get last version"))),
+            Err(_) => Err(Error::custom("failed to get last version")),
         }
     }
 }

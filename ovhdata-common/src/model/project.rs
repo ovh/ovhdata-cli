@@ -1,4 +1,4 @@
-use descriptor::{Descriptor};
+use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]

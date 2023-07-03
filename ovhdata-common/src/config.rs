@@ -136,7 +136,7 @@ impl AllConfig {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Descriptor )]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Descriptor)]
 pub struct Config {
     #[descriptor(skip)]
     pub cli_release_url: String,

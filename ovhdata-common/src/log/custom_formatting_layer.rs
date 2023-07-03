@@ -113,11 +113,10 @@ where
     {
         let message = maybe_message
             .as_ref()
-            .map(|v| match v {
+            .and_then(|v| match v {
                 Value::String(s) => Some(s.as_str()),
                 _ => None,
             })
-            .flatten()
             .unwrap_or_else(|| event.metadata().target())
             .to_owned();
 

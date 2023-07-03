@@ -3,7 +3,7 @@ use clap_complete::{generate, Shell};
 use std::io::stdout;
 
 use crate::config::CLI_NAME;
-use crate::opts::Opts;
+use crate::options::Opts;
 use crate::utils::Result;
 
 pub struct CompletionCommand {}

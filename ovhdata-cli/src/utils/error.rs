@@ -27,4 +27,3 @@ impl Error {
         Self::Custom(err.to_string())
     }
 }
-

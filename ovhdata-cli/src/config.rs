@@ -18,22 +18,21 @@ use thiserror::Error as ThisError;
 use tracing::error;
 use uuid::Uuid;
 
-
 lazy_static! {
     static ref CONTEXT: Mutex<Context> = Mutex::new(Context::load(None).expect("Unexpected error"));
     static ref CONFIG: Mutex<AllConfig> = Mutex::new(Config::load().expect("Unexpected error"));
 }
 
-pub const CLI_NAME: &'static str = "ovhdata-cli";
+pub const CLI_NAME: &str = "ovhdata-cli";
 const DEFAULT_REGION: Region = Region::EU;
-const CONFIG_EU: &'static str = include_str!("../config/eu.json");
-const CONFIG_CA: &'static str = include_str!("../config/ca.json");
+const CONFIG_EU: &str = include_str!("../config/eu.json");
+const CONFIG_CA: &str = include_str!("../config/ca.json");
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Region {
     EU,
-    CA
+    CA,
 }
 
 impl Display for Region {
@@ -74,14 +73,6 @@ pub struct RuntimeContext {
     pub service_name: Option<String>,
 }
 
-impl Default for RuntimeContext {
-    fn default() -> Self {
-        Self {
-            service_name: None,
-        }
-    }
-}
-
 #[derive(Deserialize, Serialize)]
 pub struct Features {
     #[serde(default = "default_as_true")]
@@ -110,7 +101,7 @@ impl Context {
 
     pub fn get_runtime_context(&self, config_name: &ConfigName) -> RuntimeContext {
         RuntimeContext {
-            service_name: self.get_service_name(&config_name)
+            service_name: self.get_service_name(config_name),
         }
     }
 
@@ -197,7 +188,7 @@ impl Context {
         };
 
         // If the context uuid is the default one it means that it hasn't been set yet
-        if &context.uuid == &Uuid::default() {
+        if context.uuid == Uuid::default() {
             context.uuid = Uuid::new_v4();
             if let Err(err) = context.save() {
                 eprintln!("unable to save context on {:?}: {:?}", path, err);
@@ -215,7 +206,7 @@ impl Context {
         // Context path
         create_dir_all(&context_parent_dir)?;
 
-        if let Err(_) = File::open(&context_file.clone()) {
+        if File::open(&context_file).is_err() {
             let context_file_handle = File::create(&context_file)?;
 
             #[cfg(unix)]
@@ -307,7 +298,7 @@ fn map_row_selectable_item(selectable_item: &SelectableItem, cell: String) -> St
         true => cell.green(),
         false => cell.reset(),
     }
-        .to_string()
+    .to_string()
 }
 
 impl SelectableItem {
@@ -328,8 +319,8 @@ impl Serialize for SelectableItem {
         &self,
         serializer: S,
     ) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         self.item.serialize(serializer)
     }
@@ -341,8 +332,8 @@ impl Config {
         config: ovhdata_common::config::Config,
         context: Option<RuntimeContext>,
     ) -> Self
-        where
-            N: Into<ConfigName>,
+    where
+        N: Into<ConfigName>,
     {
         Config {
             name: name.into(),
@@ -364,7 +355,7 @@ impl Config {
     }
 
     pub fn get_config_name() -> ConfigName {
-        Self::get().name.clone()
+        Self::get().name
     }
 
     /// Get global config
@@ -401,12 +392,13 @@ impl Config {
         })?;
 
         Ok(
-            serde_json::from_value::<ovhdata_common::config::Config>(_config_val).expect(
-                format!(
-                    "Unable to load default configuration for region {}",
-                    region.to_string().as_str()
-                )
-                    .as_str(),
+            serde_json::from_value::<ovhdata_common::config::Config>(_config_val).unwrap_or_else(
+                |_| {
+                    panic!(
+                        "Unable to load default configuration for region {}",
+                        &region
+                    )
+                },
             ),
         )
     }
@@ -452,4 +444,3 @@ impl From<ovhdata_common::config::Error> for Error {
         Error::ConfigError(err)
     }
 }
-

@@ -14,7 +14,7 @@ pub struct CredentialDetails {
     pub ovh_support: bool,
     pub status: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub rules: Vec<AccessRule>
+    pub rules: Vec<AccessRule>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]

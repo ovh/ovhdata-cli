@@ -1,5 +1,5 @@
 pub mod auth;
-pub mod me;
 pub mod di;
-pub mod utils;
+pub mod me;
 pub mod project;
+pub mod utils;

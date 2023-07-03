@@ -2,34 +2,36 @@ use std::fs::OpenOptions;
 use std::io::stdout;
 use std::process::exit;
 
-use clap::Parser;
 use clap::error::ErrorKind;
+use clap::Parser;
 use crossterm::tty::IsTty;
 use tracing::{error, info};
 use tracing_subscriber::fmt::writer::Tee;
 use tracing_subscriber::EnvFilter;
 
-use ovhdata_common::ovhapi::{OVHapiV6Client};
+use ovhdata_common::ovhapi::OVHapiV6Client;
 use ovhdata_common::BUG;
 
-use crate::command::completion::CompletionCommand;
-use crate::command::me::MeCommand;
-use crate::command::debug::DebugCommand;
 use crate::command::auth;
-use crate::command::upgrade;
-use crate::command::di::DiCommand;
+use crate::command::completion::CompletionCommand;
 use crate::command::config::ConfigCommand;
+use crate::command::debug::DebugCommand;
+use crate::command::di::DiCommand;
+use crate::command::me::MeCommand;
+use crate::command::upgrade;
 
-use crate::opts::*;
+use crate::options::*;
 
 use crate::config::{Config, Context, CLI_NAME};
 use crate::logging::SESSION_ID;
-use crate::utils::ui::printer::{Printer, NO_COLOR, NO_SPINNER, HELP_NO_AUTH_HOW_TO, HELP_NO_SERVICE_NAME_HOW_TO};
+use crate::utils::ui::printer::{
+    Printer, HELP_NO_AUTH_HOW_TO, HELP_NO_SERVICE_NAME_HOW_TO, NO_COLOR, NO_SPINNER,
+};
 
-mod logging;
 mod command;
 mod config;
-mod opts;
+mod logging;
+mod options;
 mod utils;
 
 #[tokio::main]
@@ -63,8 +65,8 @@ async fn main() {
 
     // Auto upgrade on startup except for the upgrade command ;-)
     match opts.subcmd {
-        SubCommand::Upgrade(_) => {},
-        _ => auto_upgrade().await
+        SubCommand::Upgrade(_) => {}
+        _ => auto_upgrade().await,
     }
 
     // Execute command
@@ -81,17 +83,18 @@ async fn auto_upgrade() {
         // Either no-confirm or in a TTY
         (stdout().is_tty() || !confirm_before_upgrade) &&
         // No version check in last hour
-        upgrade::Upgrade::release_cache_expired() {
-
+        upgrade::Upgrade::release_cache_expired()
+    {
         // Try to auto-upgrade
         if let Err(err) = upgrade::Upgrade::new()
-            .upgrade(false, confirm_before_upgrade, true).await {
+            .upgrade(false, confirm_before_upgrade, true)
+            .await
+        {
             Printer::eprintln_fail(&err.to_string());
         }
-    } else if stdout().is_tty(){
+    } else if stdout().is_tty() {
         // Only display banner on break changes
-        if let Err(err) = upgrade::Upgrade::new()
-            .check_upgrade().await {
+        if let Err(err) = upgrade::Upgrade::new().check_upgrade().await {
             Printer::eprintln_fail(&err.to_string());
         }
     }
@@ -150,29 +153,34 @@ fn init_log(verbosity: u8, json: bool) {
 /// Execute a command
 async fn execute_command(opts: Opts) -> Result<()> {
     // Use service name given if set
-    opts.service_name.map(|service_name| {
+    if let Some(service_name) = opts.service_name {
         let mut context = Context::get();
         context.set_service_name(service_name);
-    });
+    };
 
     match opts.subcmd {
         // Upgrade
         SubCommand::Upgrade(Upgrade { force }) => {
             upgrade::Upgrade::new().upgrade(force, true, false).await?
-        }        
+        }
         // Login
         SubCommand::Login(login) => {
             let command = auth::Auth::new();
-            command.login(login.application_key, login.consumer_key, login.secret, login.output.unwrap_or_default().into()).await?
+            command
+                .login(
+                    login.application_key,
+                    login.consumer_key,
+                    login.secret,
+                    login.output.unwrap_or_default().into(),
+                )
+                .await?
         }
 
         // Logout
         SubCommand::Logout(_logout) => auth::Auth::new().logout().await?,
 
         // Debug
-        SubCommand::Debug(Debug { session_id }) => {
-            DebugCommand::new().log(session_id).await?
-        }
+        SubCommand::Debug(Debug { session_id }) => DebugCommand::new().log(session_id).await?,
 
         // Me
         SubCommand::Me(me) => {
@@ -181,16 +189,16 @@ async fn execute_command(opts: Opts) -> Result<()> {
         }
 
         // Data Integration
-        SubCommand::Di(DiShim { subcmd }) =>  {
+        SubCommand::Di(DiShim { subcmd }) => {
             let command = DiCommand::new(build_ovhapi_cloud_client().await?);
             command.execute_command(subcmd).await?
-        },
+        }
 
         // Config
         SubCommand::Config(ConfigShim { subcmd }) => {
             let command = ConfigCommand::new(build_ovhapi_cloud_client().await?);
             command.execute_command(subcmd).await?
-        },
+        }
 
         // Completion
         SubCommand::Completion(completion) => {
@@ -238,11 +246,10 @@ async fn build_ovhapi_client() -> Result<OVHapiV6Client> {
         Config::get().ovhapiv6.endpoint_url.clone(),
         ovhapicreds.application_key.unwrap(),
         ovhapicreds.application_secret.unwrap(),
-        ovhapicreds.consumer_key.unwrap()
+        ovhapicreds.consumer_key.unwrap(),
     );
     Ok(ovhapiv6_client)
 }
-
 
 /// Unwrap the result or print and error and exit
 fn unwrap_or_exit<T>(result: Result<T>, verbosity: u8) -> T {

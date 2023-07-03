@@ -13,7 +13,7 @@ lazy_static! {
         let mut file = std::env::temp_dir();
         let context = Context::get();
         file.push(context.uuid.to_string());
-        file.push(format!("{}-{}.log", SESSION_ID.to_string(), CLI_NAME));
+        file.push(format!("{}-{}.log", *SESSION_ID, CLI_NAME));
         file
     };
 }
