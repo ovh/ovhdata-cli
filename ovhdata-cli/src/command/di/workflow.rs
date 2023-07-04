@@ -88,10 +88,10 @@ impl WorkflowCommand {
 
         let spec = WorkflowSpec {
             name: input.name.clone(),
-            description: description,
+            description,
             source_id,
             destination_id,
-            schedule: schedule,
+            schedule,
             region: input.region.clone(),
             enabled: !input.disabled,
         };
