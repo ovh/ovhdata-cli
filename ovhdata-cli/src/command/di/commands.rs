@@ -21,41 +21,12 @@ impl DiCommand {
     pub async fn execute_command(&self, di_commands: DiSubCommands) -> Result<()> {
         info!("data integration command (di)");
         match di_commands {
-            DiSubCommands::Source(subcmd) => {
-                SourceCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-
-            DiSubCommands::Destination(subcmd) => {
-                DestinationCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-
-            DiSubCommands::SourceConnector(subcmd) => {
-                SourceConnectorCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-
-            DiSubCommands::DestinationConnector(subcmd) => {
-                DestinationConnectorCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-
-            DiSubCommands::Workflow(subcmd) => {
-                WorkflowCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-
-            DiSubCommands::Job(subcmd) => {
-                JobCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
+            DiSubCommands::Source(subcmd) => SourceCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubCommands::Destination(subcmd) => DestinationCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubCommands::SourceConnector(subcmd) => SourceConnectorCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubCommands::DestinationConnector(subcmd) => DestinationConnectorCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubCommands::Workflow(subcmd) => WorkflowCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubCommands::Job(subcmd) => JobCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
         }
     }
 }

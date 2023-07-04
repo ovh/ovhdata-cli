@@ -22,40 +22,12 @@ impl SourceCommand {
 
     pub async fn execute_command(&self, commands: DiSubSourceCommands) -> Result<()> {
         match commands {
-            DiSubSourceCommands::Status(source_get) => {
-                self.get_last_connection_status(
-                    &source_get,
-                    source_get.output.unwrap_or_default().into(),
-                )
-                .await
-            }
-            DiSubSourceCommands::List(source_list) => {
-                self.list(source_list.output.unwrap_or_default().into())
-                    .await
-            }
-            DiSubSourceCommands::Get(source_get) => {
-                self.get(&source_get, source_get.output.unwrap_or_default().into())
-                    .await
-            }
-            DiSubSourceCommands::Metadata(subcmd) => {
-                SourceMetadataCommand::new(self.rcp_client.clone())
-                    .execute_command(subcmd)
-                    .await
-            }
-            DiSubSourceCommands::Create(source_create) => {
-                self.create(
-                    &source_create,
-                    source_create.output.unwrap_or_default().into(),
-                )
-                .await
-            }
-            DiSubSourceCommands::Update(source_update) => {
-                self.update(
-                    &source_update,
-                    source_update.output.unwrap_or_default().into(),
-                )
-                .await
-            }
+            DiSubSourceCommands::Status(src_get) => self.get_last_connection_status(&src_get, src_get.output.unwrap_or_default().into()).await,
+            DiSubSourceCommands::List(source_list) => self.list(source_list.output.unwrap_or_default().into()).await,
+            DiSubSourceCommands::Get(source_get) => self.get(&source_get, source_get.output.unwrap_or_default().into()).await,
+            DiSubSourceCommands::Metadata(subcmd) => SourceMetadataCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
+            DiSubSourceCommands::Create(source_create) => self.create(&source_create, source_create.output.unwrap_or_default().into()).await,
+            DiSubSourceCommands::Update(source_update) => self.update(&source_update, source_update.output.unwrap_or_default().into()).await,
             DiSubSourceCommands::Delete(source_delete) => self.delete(&source_delete).await,
         }
     }
@@ -74,17 +46,10 @@ impl SourceCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            Printer::print_command(&format!(
-                "di source get {} --service-name {} ",
-                &id, &service_name
-            ));
+            Printer::print_command(&format!("di source get {} --service-name {} ", &id, &service_name));
         }
 
-        let source = self
-            .rcp_client
-            .clone()
-            .di_source(&service_name, &id)
-            .await?;
+        let source = self.rcp_client.clone().di_source(&service_name, &id).await?;
         Printer::print_object(&source, &output)?;
         Ok(())
     }
@@ -94,17 +59,10 @@ impl SourceCommand {
         let id = self.get_source_id(&service_name, &input.id).await?;
 
         if input.id.is_none() {
-            Printer::print_command(&format!(
-                "di source status {} --service-name {} ",
-                &id, &service_name
-            ));
+            Printer::print_command(&format!("di source status {} --service-name {} ", &id, &service_name));
         }
 
-        let source_status = self
-            .rcp_client
-            .clone()
-            .di_source_status(&service_name, &id)
-            .await?;
+        let source_status = self.rcp_client.clone().di_source_status(&service_name, &id).await?;
         Printer::print_object(&source_status, &output)?;
         Ok(())
     }
@@ -117,11 +75,7 @@ impl SourceCommand {
         let source = self.rcp_client.di_source(&service_name, &id).await?;
 
         // Get connector specs
-        let connector = self
-            .rcp_client
-            .clone()
-            .di_source_connector(&service_name, &source.connector_id)
-            .await?;
+        let connector = self.rcp_client.clone().di_source_connector(&service_name, &source.connector_id).await?;
 
         let interactive = input.name.is_none();
         let name = if interactive {
@@ -132,12 +86,7 @@ impl SourceCommand {
 
         // Update connector parameters with the
 
-        let parameters = Printer::ask_connector_parameters(
-            &input.parameters,
-            Some(&source.parameters),
-            &connector.parameters,
-        )
-        .unwrap();
+        let parameters = Printer::ask_connector_parameters(&input.parameters, Some(&source.parameters), &connector.parameters).unwrap();
         let parameters_len = parameters.len();
 
         // Default values will be overridden
@@ -167,10 +116,7 @@ impl SourceCommand {
         }
 
         let spinner = Printer::start_spinner("Source updating");
-        let source = self
-            .rcp_client
-            .di_source_update(&service_name, &id, &spec)
-            .await?;
+        let source = self.rcp_client.di_source_update(&service_name, &id, &spec).await?;
         Printer::stop_spinner(spinner);
 
         Printer::print_object(&source, &output)?;
@@ -182,11 +128,7 @@ impl SourceCommand {
         let service_name = Context::get().get_current_service_name().unwrap();
 
         let connector_id = if interactive {
-            let connectors = self
-                .rcp_client
-                .clone()
-                .di_source_connectors(&service_name)
-                .await?;
+            let connectors = self.rcp_client.clone().di_source_connectors(&service_name).await?;
 
             let connector = Printer::ask_select_table(&connectors, None)?;
             println!(
@@ -199,15 +141,9 @@ impl SourceCommand {
             input.connector_id.clone().unwrap()
         };
 
-        let connector = self
-            .rcp_client
-            .clone()
-            .di_source_connector(&service_name, &connector_id)
-            .await?;
+        let connector = self.rcp_client.clone().di_source_connector(&service_name, &connector_id).await?;
 
-        let parameters =
-            Printer::ask_connector_parameters(&input.parameters, None, &connector.parameters)
-                .unwrap();
+        let parameters = Printer::ask_connector_parameters(&input.parameters, None, &connector.parameters).unwrap();
         let parameters_len = parameters.len();
 
         // Default values will be overridden
@@ -220,10 +156,7 @@ impl SourceCommand {
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
             Printer::print_object(&spec, &output)?;
-            let confirm = Printer::confirm(&format!(
-                "Do you want to create the source {} ?",
-                &input.name
-            ));
+            let confirm = Printer::confirm(&format!("Do you want to create the source {} ?", &input.name));
 
             let cmd = format!(
                 "di source create {} --service-name {} --connector-id {} {}",
@@ -253,10 +186,7 @@ impl SourceCommand {
         let source_id = self.get_source_id(&service_name, &input.id).await?;
 
         if !input.force {
-            let message = format!(
-                "Are you sure you want to delete the source {} ?",
-                source_id.clone().green()
-            );
+            let message = format!("Are you sure you want to delete the source {} ?", source_id.clone().green());
             let confirm = Printer::confirm(&message);
 
             if confirm.is_err() {
@@ -265,22 +195,14 @@ impl SourceCommand {
         }
 
         if input.id.is_none() {
-            Printer::print_command(&format!(
-                "di source delete {} --service-name {} ",
-                &source_id, &service_name
-            ));
+            Printer::print_command(&format!("di source delete {} --service-name {} ", &source_id, &service_name));
         }
 
         let spinner = Printer::start_spinner("Deleting source");
-        self.rcp_client
-            .di_source_delete(&service_name, &source_id)
-            .await?;
+        self.rcp_client.di_source_delete(&service_name, &source_id).await?;
         Printer::stop_spinner(spinner);
 
-        Printer::println_success(
-            &mut stdout(),
-            &format!("Source {} successfully deleted", source_id.clone().green()),
-        );
+        Printer::println_success(&mut stdout(), &format!("Source {} successfully deleted", source_id.clone().green()));
         Ok(())
     }
 

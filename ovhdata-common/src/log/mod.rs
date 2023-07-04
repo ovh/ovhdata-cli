@@ -16,11 +16,7 @@ use event::DataLogContext;
 
 /// Register a subscriber as global default to process span data.
 /// It should only be called once!
-pub fn init_subscriber<W>(
-    make_writer: W,
-    json: bool,
-    env_filter: EnvFilter,
-) -> Result<(), SetGlobalDefaultError>
+pub fn init_subscriber<W>(make_writer: W, json: bool, env_filter: EnvFilter) -> Result<(), SetGlobalDefaultError>
 where
     W: for<'a> MakeWriter<'a> + Sync + Send + 'static,
 {
@@ -30,19 +26,14 @@ where
     }
 }
 
-fn _init_subscriber(
-    subscriber: impl Subscriber + Sync + Send,
-) -> Result<(), SetGlobalDefaultError> {
+fn _init_subscriber(subscriber: impl Subscriber + Sync + Send) -> Result<(), SetGlobalDefaultError> {
     // LogTracer convert logger events from other libraries into tracing events
     LogTracer::init().expect("Failed to set logger");
     // Set the global tracing subscriber
     set_global_default(subscriber)
 }
 
-fn _get_default_subscriber<W>(
-    make_writer: W,
-    env_filter: EnvFilter,
-) -> impl Subscriber + Sync + Send
+fn _get_default_subscriber<W>(make_writer: W, env_filter: EnvFilter) -> impl Subscriber + Sync + Send
 where
     W: for<'a> MakeWriter<'a> + Sync + Send + 'static,
 {

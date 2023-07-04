@@ -17,21 +17,10 @@ impl ConfigCommand {
 
     pub async fn execute_command(&self, config_command: ConfigSubCommand) -> Result<()> {
         match config_command {
-            ConfigSubCommand::List(config_list) => {
-                self.list(config_list.output.unwrap_or_default().into())
-            }
-            ConfigSubCommand::Get(config_get) => self.get(
-                config_get.config_name,
-                config_get.output.unwrap_or_default().into(),
-            ),
-            ConfigSubCommand::Set(config_set) => self.set(
-                config_set.config_name,
-                config_set.output.unwrap_or_default().into(),
-            ),
-            ConfigSubCommand::SetServiceName(config_set_service_name) => {
-                self.set_service_name(&config_set_service_name.service_name)
-                    .await
-            }
+            ConfigSubCommand::List(config_list) => self.list(config_list.output.unwrap_or_default().into()),
+            ConfigSubCommand::Get(config_get) => self.get(config_get.config_name, config_get.output.unwrap_or_default().into()),
+            ConfigSubCommand::Set(config_set) => self.set(config_set.config_name, config_set.output.unwrap_or_default().into()),
+            ConfigSubCommand::SetServiceName(config_set_service_name) => self.set_service_name(&config_set_service_name.service_name).await,
         }
     }
 
@@ -43,10 +32,7 @@ impl ConfigCommand {
             .iter()
             .map(|(config_name, config)| {
                 let is_selected = &all_config.current_config_name == config_name;
-                SelectableItem::new(
-                    Config::new(config_name.clone(), config.clone(), None),
-                    is_selected,
-                )
+                SelectableItem::new(Config::new(config_name.clone(), config.clone(), None), is_selected)
             })
             .collect::<Vec<SelectableItem>>();
         Printer::print_list(&all_items, &output)?;
@@ -59,10 +45,7 @@ impl ConfigCommand {
 
         let runtime_context = Context::get().get_runtime_context(&config.0);
 
-        Printer::print_object(
-            &Config::new(config.0, config.1, Some(runtime_context)),
-            &output,
-        )?;
+        Printer::print_object(&Config::new(config.0, config.1, Some(runtime_context)), &output)?;
         Ok(())
     }
 
@@ -75,18 +58,12 @@ impl ConfigCommand {
         all_config.set_current_config(config.clone().0)?;
         all_config.save(custom_config_path())?;
 
-        Printer::print_object(
-            &Config::new(config.0, config.1, Some(runtime_context)),
-            &output,
-        )?;
+        Printer::print_object(&Config::new(config.0, config.1, Some(runtime_context)), &output)?;
         Ok(())
     }
 
     // Get config with interactive mode if necessary
-    fn get_config(
-        &self,
-        name: Option<String>,
-    ) -> Result<(ConfigName, ovhdata_common::config::Config)> {
+    fn get_config(&self, name: Option<String>) -> Result<(ConfigName, ovhdata_common::config::Config)> {
         let all_config = Config::get_all();
         let all_items = all_config
             .configs
@@ -114,9 +91,7 @@ impl ConfigCommand {
 
         let service_name = if interactive {
             let projects = self.rcp_client.projects().await?;
-            Printer::ask_select_table(&projects, None)?
-                .project_id
-                .clone()
+            Printer::ask_select_table(&projects, None)?.project_id.clone()
         } else {
             input_service_name.clone().unwrap()
         };

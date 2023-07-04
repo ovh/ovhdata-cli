@@ -6,9 +6,7 @@ use std::ops::{Add, Not};
 use std::sync::RwLock;
 
 use console::Term;
-use crossterm::style::{
-    Attribute, Color, SetAttribute, SetBackgroundColor, SetForegroundColor, Stylize,
-};
+use crossterm::style::{Attribute, Color, SetAttribute, SetBackgroundColor, SetForegroundColor, Stylize};
 use crossterm::terminal::{Clear, ClearType};
 use descriptor::{object_describe, table_describe_to_string, Describe, Describer};
 use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input, Password, Select};
@@ -29,8 +27,7 @@ use crate::CLI_NAME;
 pub const HELP_MAIN: &str = include_str!("../../../doc/main-help.md");
 pub const HELP_LOGIN_HOW_TO: &str = include_str!("../../../doc/login-how-to.md");
 pub const HELP_NO_AUTH_HOW_TO: &str = include_str!("../../../doc/no-auth-how-to.md");
-pub const HELP_NO_SERVICE_NAME_HOW_TO: &str =
-    include_str!("../../../doc/no-service-name-how-to.md");
+pub const HELP_NO_SERVICE_NAME_HOW_TO: &str = include_str!("../../../doc/no-service-name-how-to.md");
 pub const HELP_LOGIN_SUCCESS: &str = include_str!("../../../doc/login-success.md");
 pub const HELP_COMPLETION_HOW_TO: &str = include_str!("../../../doc/completion-how-to.md");
 pub const HELP_UPGRADE: &str = include_str!("../../../doc/upgrade-info.md");
@@ -82,10 +79,7 @@ impl Printer {
         Ok(reply_index)
     }
 
-    pub fn ask_select_table<T: Describe>(
-        data: &[T],
-        default_selection: Option<String>,
-    ) -> Result<&T> {
+    pub fn ask_select_table<T: Describe>(data: &[T], default_selection: Option<String>) -> Result<&T> {
         let table = table_describe_to_string(data).unwrap();
         let mut table_entries: Vec<_> = table.split('\n').collect();
 
@@ -156,10 +150,7 @@ impl Printer {
         Ok(parameters)
     }
 
-    fn get_validator_help(
-        type_name: &str,
-        option_validator: &Option<ConnectorValidator>,
-    ) -> String {
+    fn get_validator_help(type_name: &str, option_validator: &Option<ConnectorValidator>) -> String {
         match option_validator {
             Some(validator) => match type_name {
                 "string" => "None (string by default)".to_string(),
@@ -177,10 +168,7 @@ impl Printer {
         }
     }
 
-    fn ask_parameter(
-        connector_parameter: &ConnectorParameter,
-        current_value: Option<String>,
-    ) -> Result<Option<Parameter>> {
+    fn ask_parameter(connector_parameter: &ConnectorParameter, current_value: Option<String>) -> Result<Option<Parameter>> {
         let prompt = format!(
             "{}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n\t{} {}\n{}",
             "Enter parameter".blue(),
@@ -189,10 +177,7 @@ impl Printer {
             "\u{251C} Type:".blue(),
             connector_parameter.type_name.clone(),
             "\u{251C} Validator:".blue(),
-            Printer::get_validator_help(
-                &connector_parameter.type_name,
-                &connector_parameter.validator
-            ),
+            Printer::get_validator_help(&connector_parameter.type_name, &connector_parameter.validator),
             "\u{251C} Description:".blue(),
             connector_parameter.description.clone(),
             "\u{2514} Mandatory:".blue(),
@@ -200,27 +185,18 @@ impl Printer {
             connector_parameter.name.clone()
         );
 
-        let default_value =
-            if connector_parameter.mandatory && connector_parameter.default.is_some() {
-                connector_parameter.clone().default
-            } else {
-                None
-            };
+        let default_value = if connector_parameter.mandatory && connector_parameter.default.is_some() {
+            connector_parameter.clone().default
+        } else {
+            None
+        };
 
         let parameter_value = match connector_parameter.type_name.clone().as_str() {
             "string" => {
-                let value = Printer::ask_input_string(
-                    &prompt,
-                    current_value.clone(),
-                    connector_parameter.mandatory.not(),
-                    default_value,
-                );
+                let value = Printer::ask_input_string(&prompt, current_value.clone(), connector_parameter.mandatory.not(), default_value);
                 if value.is_some() {
                     value
-                } else if !connector_parameter.mandatory
-                    && value.is_none()
-                    && current_value.is_some()
-                {
+                } else if !connector_parameter.mandatory && value.is_none() && current_value.is_some() {
                     // current value / none from keyboard and not mandatory, return empty string (delete it)
                     Some("".to_string())
                 } else {
@@ -238,10 +214,7 @@ impl Printer {
                 );
                 if value.is_some() {
                     value
-                } else if !connector_parameter.mandatory
-                    && value.is_none()
-                    && current_value.is_some()
-                {
+                } else if !connector_parameter.mandatory && value.is_none() && current_value.is_some() {
                     // current value / none from keyboard and not mandatory, return empty string (delete it)
                     Some("".to_string())
                 } else {
@@ -261,10 +234,7 @@ impl Printer {
                 Some(value.unwrap().to_string())
             }
             _ => {
-                return Err(Error::Custom(format!(
-                    "Unsupported parameter type {}!",
-                    connector_parameter.type_name
-                )));
+                return Err(Error::Custom(format!("Unsupported parameter type {}!", connector_parameter.type_name)));
             }
         };
 
@@ -280,19 +250,11 @@ impl Printer {
         }
     }
 
-    pub fn ask_input_string(
-        prompt: &str,
-        initial_text: Option<String>,
-        allow_empty: bool,
-        default: Option<String>,
-    ) -> Option<String> {
+    pub fn ask_input_string(prompt: &str, initial_text: Option<String>, allow_empty: bool, default: Option<String>) -> Option<String> {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding
-            .with_prompt(prompt)
-            .report(false)
-            .allow_empty(allow_empty);
+        input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty);
 
         if let Some(default_input) = default {
             input_binding.default(default_input);
@@ -302,10 +264,7 @@ impl Printer {
             input_binding.with_initial_text(text);
         }
 
-        input_binding
-            .interact_text()
-            .map(|s: String| s.is_empty().not().then_some(s))
-            .unwrap()
+        input_binding.interact_text().map(|s: String| s.is_empty().not().then_some(s)).unwrap()
     }
 
     fn ask_input_integer(
@@ -318,27 +277,23 @@ impl Printer {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding
-            .with_prompt(prompt)
-            .report(false)
-            .allow_empty(allow_empty)
-            .validate_with({
-                move |input: &String| -> std::result::Result<(), String> {
-                    let test = input.parse::<i64>();
-                    match test {
-                        Ok(value) => {
-                            if value < validator.min {
-                                Err(format!("The value can not be lower than {}", validator.min))
-                            } else if value > validator.max {
-                                Err(format!("The value can not be upper than {}", validator.max))
-                            } else {
-                                Ok(())
-                            }
+        input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty).validate_with({
+            move |input: &String| -> std::result::Result<(), String> {
+                let test = input.parse::<i64>();
+                match test {
+                    Ok(value) => {
+                        if value < validator.min {
+                            Err(format!("The value can not be lower than {}", validator.min))
+                        } else if value > validator.max {
+                            Err(format!("The value can not be upper than {}", validator.max))
+                        } else {
+                            Ok(())
                         }
-                        Err(_) => Err("Invalid value, this is not an integer".to_string()),
                     }
+                    Err(_) => Err("Invalid value, this is not an integer".to_string()),
                 }
-            });
+            }
+        });
 
         if let Some(default_input) = default {
             input_binding.default(default_input);
@@ -348,10 +303,7 @@ impl Printer {
             input_binding.with_initial_text(text);
         }
 
-        input_binding
-            .interact_text()
-            .map(|s: String| s.is_empty().not().then_some(s))
-            .unwrap()
+        input_binding.interact_text().map(|s: String| s.is_empty().not().then_some(s)).unwrap()
     }
 
     pub fn ask_input_boolean(prompt: &str, default: bool) -> Result<bool> {
@@ -375,10 +327,7 @@ impl Printer {
     }
 
     pub fn confirm(message: &str) -> Result<bool> {
-        if !Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt(message)
-            .interact()?
-        {
+        if !Confirm::with_theme(&ColorfulTheme::default()).with_prompt(message).interact()? {
             return Err(Error::custom("Operation cancelled by user"));
         }
         Ok(true)
@@ -398,8 +347,7 @@ impl Printer {
     }
 
     pub fn eprintln_fail(msg: &str) {
-        writeln!(stderr(), "{}{}", INVALID.dark_red(), msg.dark_red().bold())
-            .expect("can't write on stderr");
+        writeln!(stderr(), "{}{}", INVALID.dark_red(), msg.dark_red().bold()).expect("can't write on stderr");
     }
 
     pub fn print_object<T>(data: &T, output: &Output) -> Result<()>
@@ -408,12 +356,7 @@ impl Printer {
     {
         match output {
             Output::Table(headers) => {
-                Describer::describe_list_with_header(
-                    std::slice::from_ref(data),
-                    headers,
-                    &mut stdout(),
-                    descriptor::Context::default(),
-                )?;
+                Describer::describe_list_with_header(std::slice::from_ref(data), headers, &mut stdout(), descriptor::Context::default())?;
                 Ok(())
             }
             Output::Json => Self::print_json(data),
@@ -432,12 +375,7 @@ impl Printer {
         match output {
             Output::Table(headers) => {
                 if !data.is_empty() {
-                    Describer::describe_list_with_header(
-                        data,
-                        headers.as_slice(),
-                        &mut stdout(),
-                        descriptor::Context::default(),
-                    )?;
+                    Describer::describe_list_with_header(data, headers.as_slice(), &mut stdout(), descriptor::Context::default())?;
                 }
             }
             Output::Json => Self::print_json(&data)?,
@@ -468,7 +406,11 @@ impl Printer {
         println!();
         writeln!(stdout(), "Running the following command:").unwrap();
         writeln!(stdout(), "> {} {}", CLI_NAME.bold(), command.bold()).unwrap();
-        writeln!(stdout(), "(consider adding the --no-spinner, --no-color and -f options to use this command in a script)").unwrap();
+        writeln!(
+            stdout(),
+            "(consider adding the --no-spinner, --no-color and -f options to use this command in a script)"
+        )
+        .unwrap();
     }
 
     pub fn print_help(markdown: &str, toggle: Toggle) {
@@ -501,13 +443,7 @@ impl Printer {
         let mut output = Vec::new();
 
         if let Some(bg_color) = md_style.background {
-            write!(
-                &mut output,
-                "{}{}",
-                SetBackgroundColor(bg_color),
-                "\n".repeat(md_style.padding_top)
-            )
-            .unwrap();
+            write!(&mut output, "{}{}", SetBackgroundColor(bg_color), "\n".repeat(md_style.padding_top)).unwrap();
         }
         let foreground: Color = match md_style.foreground {
             Some(fg_color) => {

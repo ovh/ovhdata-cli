@@ -33,8 +33,7 @@ impl Auth {
         application_secret: Option<String>,
         output: Output,
     ) -> Result<()> {
-        let interactive =
-            application_secret.is_none() || application_key.is_none() || consumer_key.is_none();
+        let interactive = application_secret.is_none() || application_key.is_none() || consumer_key.is_none();
 
         let creds = if interactive {
             // If the config exists, test it
@@ -63,20 +62,12 @@ impl Auth {
                     if let api::Error::Response(status_code, message) = error {
                         match status_code {
                             reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::UNAUTHORIZED => {
-                                Printer::eprintln_fail(&format!(
-                                    "You are not authenticated, status_code={}",
-                                    status_code
-                                ));
+                                Printer::eprintln_fail(&format!("You are not authenticated, status_code={}", status_code));
                                 Printer::eprintln_fail(&message);
                             }
 
                             // Propagate other errors
-                            _ => {
-                                return Err(Error::DataApi(api::Error::Response(
-                                    status_code,
-                                    message,
-                                )))
-                            }
+                            _ => return Err(Error::DataApi(api::Error::Response(status_code, message))),
                         }
                     }
                 }
@@ -91,8 +82,7 @@ impl Auth {
             Printer::print_help(HELP_LOGIN_HOW_TO, Toggle::NoToggle);
 
             // Login with browser
-            open::that(self.config.ovhapiv6.create_token_url.as_str())
-                .map_err(|_| Error::UserInput)?;
+            open::that(self.config.ovhapiv6.create_token_url.as_str()).map_err(|_| Error::UserInput)?;
 
             // Ask Application key
             let application_key = match application_key {

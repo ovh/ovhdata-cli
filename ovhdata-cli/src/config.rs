@@ -107,9 +107,7 @@ impl Context {
 
     pub fn get_ovhapi_credentials(&self) -> Option<Ovhapiv6Credentials> {
         let config_name = Config::get_config_name();
-        self.ovhapi_credentials
-            .as_ref()
-            .and_then(|x| x.get(&config_name).cloned())
+        self.ovhapi_credentials.as_ref().and_then(|x| x.get(&config_name).cloned())
     }
 
     pub fn set_ovhapi_credentials(&mut self, creds: Ovhapiv6Credentials) {
@@ -132,9 +130,7 @@ impl Context {
     }
 
     fn get_service_name(&self, config_name: &ConfigName) -> Option<String> {
-        self.service_names
-            .as_ref()
-            .and_then(|x| x.get(config_name).cloned())
+        self.service_names.as_ref().and_then(|x| x.get(config_name).cloned())
     }
 
     pub fn set_service_name(&mut self, service_name: String) {
@@ -170,11 +166,7 @@ impl Context {
     /// Load context from a file, return default if it does not exist yet
     fn load(custom_path: Option<PathBuf>) -> Result<Self> {
         // Context path
-        let path = if let Some(cp) = custom_path {
-            cp
-        } else {
-            default_context_path()
-        };
+        let path = if let Some(cp) = custom_path { cp } else { default_context_path() };
         Context::create_context_file(path.clone())?;
 
         // Read context
@@ -315,10 +307,7 @@ impl Deref for Config {
 }
 
 impl Serialize for SelectableItem {
-    fn serialize<S>(
-        &self,
-        serializer: S,
-    ) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<<S as Serializer>::Ok, <S as Serializer>::Error>
     where
         S: Serializer,
     {
@@ -327,11 +316,7 @@ impl Serialize for SelectableItem {
 }
 
 impl Config {
-    pub fn new<N>(
-        name: N,
-        config: ovhdata_common::config::Config,
-        context: Option<RuntimeContext>,
-    ) -> Self
+    pub fn new<N>(name: N, config: ovhdata_common::config::Config, context: Option<RuntimeContext>) -> Self
     where
         N: Into<ConfigName>,
     {
@@ -345,11 +330,7 @@ impl Config {
     pub fn get() -> Self {
         let all_config = Self::get_all();
         match all_config.get_current_config() {
-            Ok(config) => Config::new(
-                all_config.current_config_name.as_str(),
-                config.clone(),
-                None,
-            ),
+            Ok(config) => Config::new(all_config.current_config_name.as_str(), config.clone(), None),
             Err(error) => panic!("{}", error.to_string()),
         }
     }
@@ -391,16 +372,8 @@ impl Config {
             Region::EU => CONFIG_EU,
         })?;
 
-        Ok(
-            serde_json::from_value::<ovhdata_common::config::Config>(_config_val).unwrap_or_else(
-                |_| {
-                    panic!(
-                        "Unable to load default configuration for region {}",
-                        &region
-                    )
-                },
-            ),
-        )
+        Ok(serde_json::from_value::<ovhdata_common::config::Config>(_config_val)
+            .unwrap_or_else(|_| panic!("Unable to load default configuration for region {}", &region)))
     }
 }
 

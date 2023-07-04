@@ -20,8 +20,7 @@ where
     T: DeserializeOwned,
 {
     let body_string = response.body_text().await;
-    serde_json::from_str(body_string.as_str())
-        .map_err(|e| Error::DeserializeContent(e, body_string))
+    serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))
 }
 
 /// Send HTTP request with optional body and return a response
@@ -33,11 +32,7 @@ where
         url = %request.url(),
     )
 )]
-pub async fn send_request(
-    client: &Client,
-    request: RequestWrapper,
-    allowed_statuses: &[StatusCode],
-) -> Result<ResponseWrapper> {
+pub async fn send_request(client: &Client, request: RequestWrapper, allowed_statuses: &[StatusCode]) -> Result<ResponseWrapper> {
     let request_id = *request.request_id();
     let request_method = request.method().clone();
     info!(
@@ -62,8 +57,7 @@ pub async fn send_request(
             } else {
                 let body_string = response.body_text().await;
 
-                let body_string = match serde_json::from_str::<ResponseError>(body_string.as_str())
-                {
+                let body_string = match serde_json::from_str::<ResponseError>(body_string.as_str()) {
                     Ok(response_error) => response_error.message,
                     Err(_) => body_string,
                 };
@@ -107,11 +101,7 @@ impl RequestWrapper {
         &self.0
     }
 
-    pub async fn send(
-        self,
-        client: &Client,
-        allowed_status: &[StatusCode],
-    ) -> Result<ResponseWrapper> {
+    pub async fn send(self, client: &Client, allowed_status: &[StatusCode]) -> Result<ResponseWrapper> {
         send_request(client, self, allowed_status).await
     }
 }
@@ -157,10 +147,7 @@ impl ResponseWrapper {
     }
 
     pub fn from(request_id: Uuid, response: Response) -> Self {
-        Self {
-            request_id,
-            response,
-        }
+        Self { request_id, response }
     }
     pub async fn parse<T: DeserializeOwned>(self) -> Result<T> {
         parse_response::<T>(self).await

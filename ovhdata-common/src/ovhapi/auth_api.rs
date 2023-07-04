@@ -20,13 +20,7 @@ pub trait AuthApi {
 impl AuthApi for OVHapiV6Client {
     async fn me(&self) -> Result<Me> {
         let request = self
-            .build_request(
-                Method::GET,
-                &["auth", "details"],
-                &[],
-                &HeaderMap::new(),
-                EMPTY_BODY,
-            )
+            .build_request(Method::GET, &["auth", "details"], &[], &HeaderMap::new(), EMPTY_BODY)
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await
@@ -34,13 +28,7 @@ impl AuthApi for OVHapiV6Client {
 
     async fn current_credential(&self) -> Result<CredentialDetails> {
         let request = self
-            .build_request(
-                Method::GET,
-                &["auth", "currentCredential"],
-                &[],
-                &HeaderMap::new(),
-                EMPTY_BODY,
-            )
+            .build_request(Method::GET, &["auth", "currentCredential"], &[], &HeaderMap::new(), EMPTY_BODY)
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await
