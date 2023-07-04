@@ -10,7 +10,7 @@ pub type TablesMeta = Vec<TableMeta>;
 #[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
 #[serde(rename_all = "camelCase")]
 pub struct TableMeta {
-    pub table_name: String,
+    pub table_name: Option<String>,
     pub status: String,
     pub error: Option<String>,
     pub error_code: Option<String>,
@@ -44,7 +44,7 @@ mod tests {
 
     fn create_metadata() -> TableMeta {
         TableMeta {
-            table_name: "table-name".to_string(),
+            table_name: Some("table-name".to_string()),
             status: "SUCCESS".to_string(),
             error: None,
             error_code: None,
@@ -94,7 +94,7 @@ Metadata:
 
     fn create_metadata_empty() -> TableMeta {
         TableMeta {
-            table_name: "table-name".to_string(),
+            table_name: Some("table-name".to_string()),
             status: "PROCESSING".to_string(),
             error: None,
             error_code: None,
@@ -127,7 +127,7 @@ Metadata:
 
     fn create_metadata_error() -> TableMeta {
         TableMeta {
-            table_name: "table-name".to_string(),
+            table_name: Some("table-name".to_string()),
             status: "ERROR".to_string(),
             error: Some("Metadata were not extracted".to_string()),
             error_code: Some("404".to_string()),
