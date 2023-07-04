@@ -24,9 +24,7 @@ use crate::options::*;
 
 use crate::config::{Config, Context, CLI_NAME};
 use crate::logging::SESSION_ID;
-use crate::utils::ui::printer::{
-    Printer, HELP_NO_AUTH_HOW_TO, HELP_NO_SERVICE_NAME_HOW_TO, NO_COLOR, NO_SPINNER,
-};
+use crate::utils::ui::printer::{Printer, HELP_NO_AUTH_HOW_TO, HELP_NO_SERVICE_NAME_HOW_TO, NO_COLOR, NO_SPINNER};
 
 mod command;
 mod config;
@@ -53,10 +51,7 @@ async fn main() {
 
     // Initialize logging
     init_log(verbose, opts.json_log);
-    info!(
-        "Command: {}",
-        std::env::args().collect::<Vec<_>>().join(" ")
-    );
+    info!("Command: {}", std::env::args().collect::<Vec<_>>().join(" "));
 
     // Disable color if needed, or if stdout is a tty
     *NO_COLOR.write().expect(BUG) = opts.no_color || !stdout().is_tty();
@@ -86,10 +81,7 @@ async fn auto_upgrade() {
         upgrade::Upgrade::release_cache_expired()
     {
         // Try to auto-upgrade
-        if let Err(err) = upgrade::Upgrade::new()
-            .upgrade(false, confirm_before_upgrade, true)
-            .await
-        {
+        if let Err(err) = upgrade::Upgrade::new().upgrade(false, confirm_before_upgrade, true).await {
             Printer::eprintln_fail(&err.to_string());
         }
     } else if stdout().is_tty() {
@@ -111,19 +103,11 @@ fn init_log(verbosity: u8, json: bool) {
     let mut log_directory = log_file_path.clone();
     log_directory.pop();
     if let Err(error) = std::fs::create_dir_all(log_directory.as_path()) {
-        eprintln!(
-            "unable to create log directory {:?}: {:?}",
-            log_directory, error
-        );
+        eprintln!("unable to create log directory {:?}: {:?}", log_directory, error);
         return;
     }
     // Configure tracing subscriber to append on the log file
-    match OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        .open(log_file_path.as_path())
-    {
+    match OpenOptions::new().create(true).write(true).append(true).open(log_file_path.as_path()) {
         Ok(log_file) => {
             let result = match verbosity {
                 0 => ovhdata_common::log::init_subscriber(log_file, json, EnvFilter::new("info")),
@@ -133,11 +117,7 @@ fn init_log(verbosity: u8, json: bool) {
                         2 => "debug",
                         _ => "trace",
                     };
-                    ovhdata_common::log::init_subscriber(
-                        Tee::new(log_file, std::io::stderr),
-                        json,
-                        EnvFilter::new(directive),
-                    )
+                    ovhdata_common::log::init_subscriber(Tee::new(log_file, std::io::stderr), json, EnvFilter::new(directive))
                 }
             };
             if let Err(error) = result {
@@ -160,9 +140,7 @@ async fn execute_command(opts: Opts) -> Result<()> {
 
     match opts.subcmd {
         // Upgrade
-        SubCommand::Upgrade(Upgrade { force }) => {
-            upgrade::Upgrade::new().upgrade(force, true, false).await?
-        }
+        SubCommand::Upgrade(Upgrade { force }) => upgrade::Upgrade::new().upgrade(force, true, false).await?,
         // Login
         SubCommand::Login(login) => {
             let command = auth::Auth::new();

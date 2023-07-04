@@ -20,16 +20,9 @@ pub trait DiApi {
     async fn di_source_connector(&self, service_name: &str, id: &str) -> Result<SourceConnector>;
 
     /// List all available destination connectors
-    async fn di_destination_connectors(
-        &self,
-        service_name: &str,
-    ) -> Result<Vec<DestinationConnector>>;
+    async fn di_destination_connectors(&self, service_name: &str) -> Result<Vec<DestinationConnector>>;
     /// Get a destination connector by ID
-    async fn di_destination_connector(
-        &self,
-        service_name: &str,
-        id: &str,
-    ) -> Result<DestinationConnector>;
+    async fn di_destination_connector(&self, service_name: &str, id: &str) -> Result<DestinationConnector>;
 
     /// List all the sources for a service name
     async fn di_sources(&self, service_name: &str) -> Result<Vec<Source>>;
@@ -46,12 +39,7 @@ pub trait DiApi {
     /// Create a new source for a service name
     async fn di_source_post(&self, service_name: &str, spec: &SourceSpec) -> Result<Source>;
     /// Updates a source
-    async fn di_source_update(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &SourceSpec,
-    ) -> Result<Source>;
+    async fn di_source_update(&self, service_name: &str, id: &str, spec: &SourceSpec) -> Result<Source>;
 
     /// List all the destinations for a service name
     async fn di_destinations(&self, service_name: &str) -> Result<Vec<Destination>>;
@@ -60,20 +48,11 @@ pub trait DiApi {
     /// Get a destination status by ID
     async fn di_destination_status(&self, service_name: &str, id: &str) -> Result<Status>;
     /// Create a new destination for a service name
-    async fn di_destination_post(
-        &self,
-        service_name: &str,
-        spec: &DestinationSpec,
-    ) -> Result<Destination>;
+    async fn di_destination_post(&self, service_name: &str, spec: &DestinationSpec) -> Result<Destination>;
     /// Delete a destination by ID
     async fn di_destination_delete(&self, service_name: &str, id: &str) -> Result<()>;
     /// Updates a destination
-    async fn di_destination_update(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &DestinationSpec,
-    ) -> Result<Destination>;
+    async fn di_destination_update(&self, service_name: &str, id: &str, spec: &DestinationSpec) -> Result<Destination>;
 
     /// List all the workflows for a service name
     async fn di_workflows(&self, service_name: &str) -> Result<Vec<Workflow>>;
@@ -84,12 +63,7 @@ pub trait DiApi {
     /// Delete a workflow by ID
     async fn di_workflow_delete(&self, service_name: &str, id: &str) -> Result<()>;
     /// Update a workflow
-    async fn di_workflow_put(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &WorkflowPatch,
-    ) -> Result<Workflow>;
+    async fn di_workflow_put(&self, service_name: &str, id: &str, spec: &WorkflowPatch) -> Result<Workflow>;
 
     /// List all the jobs for a service name
     async fn di_jobs(&self, service_name: &str, workflow_id: &str) -> Result<Vec<Job>>;
@@ -107,13 +81,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sourceConnectors",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sourceConnectors"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -127,14 +95,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sourceConnectors",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sourceConnectors", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -144,20 +105,11 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
-    async fn di_destination_connectors(
-        &self,
-        service_name: &str,
-    ) -> Result<Vec<DestinationConnector>> {
+    async fn di_destination_connectors(&self, service_name: &str) -> Result<Vec<DestinationConnector>> {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinationConnectors",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinationConnectors"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -167,22 +119,11 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
-    async fn di_destination_connector(
-        &self,
-        service_name: &str,
-        id: &str,
-    ) -> Result<DestinationConnector> {
+    async fn di_destination_connector(&self, service_name: &str, id: &str) -> Result<DestinationConnector> {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinationConnectors",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinationConnectors", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -196,13 +137,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -216,14 +151,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -237,15 +165,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                    "connection",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id, "connection"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -259,15 +179,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                    "metadata",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id, "metadata"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -281,15 +193,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::POST,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                    "metadata",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id, "metadata"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -303,14 +207,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::DELETE,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -324,13 +221,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::POST,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources"],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -340,23 +231,11 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
-    async fn di_source_update(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &SourceSpec,
-    ) -> Result<Source> {
+    async fn di_source_update(&self, service_name: &str, id: &str, spec: &SourceSpec) -> Result<Source> {
         let request = self
             .build_request(
                 Method::PUT,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "sources",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "sources", id],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -370,13 +249,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -390,14 +263,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -411,15 +277,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                    id,
-                    "connection",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations", id, "connection"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -429,21 +287,11 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
-    async fn di_destination_post(
-        &self,
-        service_name: &str,
-        spec: &DestinationSpec,
-    ) -> Result<Destination> {
+    async fn di_destination_post(&self, service_name: &str, spec: &DestinationSpec) -> Result<Destination> {
         let request = self
             .build_request(
                 Method::POST,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations"],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -457,14 +305,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::DELETE,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -474,23 +315,11 @@ impl DiApi for OVHapiV6Client {
         Ok(())
     }
 
-    async fn di_destination_update(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &DestinationSpec,
-    ) -> Result<Destination> {
+    async fn di_destination_update(&self, service_name: &str, id: &str, spec: &DestinationSpec) -> Result<Destination> {
         let request = self
             .build_request(
                 Method::PUT,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "destinations",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "destinations", id],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -504,13 +333,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -524,14 +347,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -545,13 +361,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::POST,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows"],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -565,14 +375,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::DELETE,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -582,23 +385,11 @@ impl DiApi for OVHapiV6Client {
         Ok(())
     }
 
-    async fn di_workflow_put(
-        &self,
-        service_name: &str,
-        id: &str,
-        spec: &WorkflowPatch,
-    ) -> Result<Workflow> {
+    async fn di_workflow_put(&self, service_name: &str, id: &str, spec: &WorkflowPatch) -> Result<Workflow> {
         let request = self
             .build_request(
                 Method::PUT,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", id],
                 &[],
                 &HeaderMap::new(),
                 Some(spec),
@@ -612,15 +403,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    workflow_id,
-                    "jobs",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", workflow_id, "jobs"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -634,16 +417,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::GET,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    workflow_id,
-                    "jobs",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", workflow_id, "jobs", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -658,15 +432,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::POST,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    workflow_id,
-                    "jobs",
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", workflow_id, "jobs"],
                 &[],
                 &HeaderMap::new(),
                 Some(&job),
@@ -680,16 +446,7 @@ impl DiApi for OVHapiV6Client {
         let request = self
             .build_request(
                 Method::DELETE,
-                &[
-                    "cloud",
-                    "project",
-                    service_name,
-                    "dataIntegration",
-                    "workflows",
-                    workflow_id,
-                    "jobs",
-                    id,
-                ],
+                &["cloud", "project", service_name, "dataIntegration", "workflows", workflow_id, "jobs", id],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,

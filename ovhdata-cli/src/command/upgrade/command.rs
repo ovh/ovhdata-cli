@@ -57,8 +57,7 @@ impl Upgrade {
         let current_version = Version::parse(crate_version!()).expect(BUG);
 
         // Banner on break changes
-        if current_version.minor < last_version.minor || current_version.major < last_version.major
-        {
+        if current_version.minor < last_version.minor || current_version.major < last_version.major {
             Printer::print_help(HELP_UPGRADE_MANDATORY, Toggle::NoToggle);
         }
 
@@ -80,19 +79,13 @@ impl Upgrade {
         }
 
         // Banner on break changes
-        if !quiet
-            && (current_version.minor < last_version.minor
-                || current_version.major < last_version.major)
-        {
+        if !quiet && (current_version.minor < last_version.minor || current_version.major < last_version.major) {
             Printer::print_help(HELP_UPGRADE, Toggle::NoToggle);
         }
 
         // Ask for confirmation
         if confirm {
-            let message = format!(
-                "Version {} is available. Proceed with upgrade",
-                last_version
-            );
+            let message = format!("Version {} is available. Proceed with upgrade", last_version);
             let choices = ["Yes", "No", "Always", "Never"];
             match Printer::ask_select(&message, &choices, 0) {
                 Ok(choice) => match choices[choice] {
@@ -125,10 +118,7 @@ impl Upgrade {
     pub async fn upgrade_os(&self, quiet: bool, _last_version: &Version) -> Result<()> {
         if !quiet {
             eprintln!("Auto-upgrade is not available for Windows yet.");
-            eprintln!(
-                "Please download the new version of the CLI at {}",
-                Self::get_binary_url().await?
-            );
+            eprintln!("Please download the new version of the CLI at {}", Self::get_binary_url().await?);
 
             Printer::eprintln_fail("Upgrade canceled.");
         }
@@ -139,10 +129,7 @@ impl Upgrade {
     pub async fn upgrade_os(&self, quiet: bool, last_version: &Version) -> Result<()> {
         use std::os::unix::process::CommandExt;
 
-        let spinner = Printer::start_spinner(&format!(
-            "Downloading new version {}",
-            last_version.to_string().green()
-        ));
+        let spinner = Printer::start_spinner(&format!("Downloading new version {}", last_version.to_string().green()));
 
         let mut tmp_dir = std::env::temp_dir();
         tmp_dir.push(format!("{}.{}.tmp", CLI_NAME, last_version));
@@ -171,9 +158,7 @@ impl Upgrade {
         // Execute updated executable (program stops there)
         // If quiet is false the command is 'upgrade', so no need to launch the command again
         if quiet {
-            Err(Command::new(&current_exe_path)
-                .args(std::env::args().skip(1))
-                .exec())?;
+            Err(Command::new(&current_exe_path).args(std::env::args().skip(1)).exec())?;
         }
 
         Ok(())
@@ -227,10 +212,7 @@ impl Upgrade {
         }
 
         // get last version from remote
-        let client = Client::builder()
-            .build()?
-            .get(url)
-            .header(USER_AGENT, "request");
+        let client = Client::builder().build()?.get(url).header(USER_AGENT, "request");
         let body_response = client.send().await?.text().await?;
 
         // parse version

@@ -107,15 +107,7 @@ pub fn duration(start: &Option<DateTime<Utc>>, end: &Option<DateTime<Utc>>) -> S
 }
 
 #[cfg(test)]
-pub fn datetime_micro(
-    year: i32,
-    month: u32,
-    day: u32,
-    hour: u32,
-    min: u32,
-    sec: u32,
-    micro: u32,
-) -> DateTime<Utc> {
+pub fn datetime_micro(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32, micro: u32) -> DateTime<Utc> {
     use chrono::{TimeZone, Timelike};
     Utc.with_ymd_and_hms(year, month, day, hour, min, sec)
         .unwrap()

@@ -63,15 +63,14 @@ impl TryFrom<PathBuf> for AllConfig {
     type Error = Error;
 
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        let config_as_string = std::fs::read_to_string(path)
-            .map_err(|error| Error::ReadFileError(error.to_string()))?;
-        let maybe_all_config = serde_json::from_str::<AllConfig>(config_as_string.as_str())
-            .map_err(|error| Error::DeserializationError(error.to_string()));
+        let config_as_string = std::fs::read_to_string(path).map_err(|error| Error::ReadFileError(error.to_string()))?;
+        let maybe_all_config =
+            serde_json::from_str::<AllConfig>(config_as_string.as_str()).map_err(|error| Error::DeserializationError(error.to_string()));
         match maybe_all_config {
             Err(_) => {
                 // If we couldn't deserialize a group of config maybe it's only a single one
-                let single_config = serde_json::from_str::<Config>(config_as_string.as_str())
-                    .map_err(|error| Error::DeserializationError(error.to_string()))?;
+                let single_config =
+                    serde_json::from_str::<Config>(config_as_string.as_str()).map_err(|error| Error::DeserializationError(error.to_string()))?;
                 Ok(single_config.into())
             }
             other => other,
@@ -83,8 +82,7 @@ impl TryFrom<Value> for AllConfig {
     type Error = Error;
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
-        serde_json::from_value(value)
-            .map_err(|error| Error::DeserializationError(error.to_string()))
+        serde_json::from_value(value).map_err(|error| Error::DeserializationError(error.to_string()))
     }
 }
 
@@ -95,8 +93,7 @@ impl AllConfig {
             Err(err) => Err(Error::SaveConfigError(path.clone(), err.to_string()))?,
         };
 
-        std::fs::write(path.clone(), bytes)
-            .map_err(|err| Error::SaveConfigError(path.clone(), err.to_string()))
+        std::fs::write(path.clone(), bytes).map_err(|err| Error::SaveConfigError(path.clone(), err.to_string()))
     }
 
     pub fn get_current_config_name(&self) -> &ConfigName {
@@ -105,9 +102,7 @@ impl AllConfig {
 
     pub fn get_current_config(&self) -> Result<&Config, Error> {
         let current_config = &self.current_config_name;
-        self.configs
-            .get(current_config)
-            .ok_or(Error::ConfigNameNotFound(current_config.clone()))
+        self.configs.get(current_config).ok_or(Error::ConfigNameNotFound(current_config.clone()))
     }
 
     pub fn get_config<N>(&self, config_name: N) -> Option<&Config>

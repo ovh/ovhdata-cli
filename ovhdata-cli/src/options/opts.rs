@@ -5,9 +5,7 @@ use lazy_static::lazy_static;
 use std::str::FromStr;
 
 use crate::options::{ConfigShim, DiShim, ParseError, ParseResult};
-use crate::utils::ui::printer::{
-    Output, Printer, HELP_COMPLETION_HOW_TO, HELP_LOGIN_HOW_TO, HELP_MAIN,
-};
+use crate::utils::ui::printer::{Output, Printer, HELP_COMPLETION_HOW_TO, HELP_LOGIN_HOW_TO, HELP_MAIN};
 
 lazy_static! {
     static ref BEFORE_HELP_MAIN: String = Printer::gen_help(HELP_MAIN);

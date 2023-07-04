@@ -139,9 +139,7 @@ pub struct DescribedDateTime {
 
 impl From<&DateTime<Utc>> for DescribedDateTime {
     fn from(datetime: &DateTime<Utc>) -> Self {
-        DescribedDateTime {
-            datetime: *datetime,
-        }
+        DescribedDateTime { datetime: *datetime }
     }
 }
 
@@ -173,9 +171,7 @@ pub struct OptionDescribedDateTime {
 
 impl From<&Option<DateTime<Utc>>> for OptionDescribedDateTime {
     fn from(datetime: &Option<DateTime<Utc>>) -> Self {
-        OptionDescribedDateTime {
-            datetime: *datetime,
-        }
+        OptionDescribedDateTime { datetime: *datetime }
     }
 }
 

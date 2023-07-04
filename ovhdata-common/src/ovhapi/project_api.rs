@@ -26,13 +26,7 @@ impl ProjectApi for OVHapiV6Client {
 
     async fn project(&self, service_name: &str) -> Result<Project> {
         let request = self
-            .build_request(
-                Method::GET,
-                &["cloud", "project", service_name],
-                &[],
-                &HeaderMap::new(),
-                EMPTY_BODY,
-            )
+            .build_request(Method::GET, &["cloud", "project", service_name], &[], &HeaderMap::new(), EMPTY_BODY)
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await
@@ -40,13 +34,7 @@ impl ProjectApi for OVHapiV6Client {
 
     async fn project_list(&self) -> Result<Vec<String>> {
         let request = self
-            .build_request(
-                Method::GET,
-                &["cloud", "project"],
-                &[],
-                &HeaderMap::new(),
-                EMPTY_BODY,
-            )
+            .build_request(Method::GET, &["cloud", "project"], &[], &HeaderMap::new(), EMPTY_BODY)
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await

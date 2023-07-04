@@ -16,7 +16,7 @@ This is a set of recommendations on how to design and present APIs for the Rust 
 Read them [here](https://github.com/rust-lang/rustfmt)
 
 ## Code Style
-The code linter used is `cargo clippy`, all warning have to be fixed before merge a PR.
+The code linter used is `cargo clippy`, all warning have to be fixed before merging a PR.
 
 ## Commit titles 
 All commit titles must respect the following format.  Warning, the first commits in this project did not have this rule, please don't copy them. 

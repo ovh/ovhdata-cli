@@ -70,10 +70,7 @@ where
         map_serializer.serialize_entry("target", &target)?;
 
         // Compute level field
-        map_serializer.serialize_entry(
-            "level",
-            &event.metadata().level().as_log().to_string().to_lowercase(),
-        )?;
+        map_serializer.serialize_entry("level", &event.metadata().level().as_log().to_string().to_lowercase())?;
 
         // Compute time field
         if let Ok(time) = &time::OffsetDateTime::now_utc().format(&Rfc3339) {
@@ -81,16 +78,11 @@ where
         }
 
         // Add all the other fields associated with the event, expect the message we already used.
-        for (key, value) in event_visitor.values().iter().filter(|(key, _)| {
-            ![
-                "log.module_path",
-                "log.file",
-                "log.target",
-                "log.line",
-                "message",
-            ]
-            .contains(key)
-        }) {
+        for (key, value) in event_visitor
+            .values()
+            .iter()
+            .filter(|(key, _)| !["log.module_path", "log.file", "log.target", "log.line", "message"].contains(key))
+        {
             map_serializer.serialize_entry(key, value)?;
         }
 
