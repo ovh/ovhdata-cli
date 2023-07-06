@@ -87,7 +87,7 @@ impl DestinationCommand {
 
         // new parameters we are in interactive mode
         if input.connector_id.is_none() || parameters_len > input.parameters.len() {
-            Printer::print_object(&spec, &output)?;
+            self.print_dest_spec(&spec, &output)?;
             let message = format!("Do you want to create the destination {} ?", input.name.clone());
             let confirm = Printer::confirm(&message);
 
@@ -145,16 +145,15 @@ impl DestinationCommand {
 
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
-            Printer::print_object(&spec, &output)?;
+            self.print_dest_spec(&spec, &output)?;
             let confirm = Printer::confirm(&format!("Do you want to update the destination {} ?", id));
 
-            let cmd = format!(
+            Printer::print_command(&format!(
                 "di destination update {} --service-name {} {}",
                 &spec.name,
                 &service_name,
                 ParametersWrapper(spec.parameters.clone())
-            );
-            Printer::print_command(&cmd);
+            ));
 
             if confirm.is_err() {
                 return Err(Error::custom("Update destination canceled"));
@@ -225,5 +224,13 @@ impl DestinationCommand {
             input_id.clone().unwrap()
         };
         Ok(id)
+    }
+
+    // Print spec with secret clearing
+    fn print_dest_spec(&self, spec: &DestinationSpec, output: &Output) -> Result<()> {
+        let mut spec_output = spec.clone();
+        spec_output.parameters = Printer::filter_parameters(&spec_output.parameters);
+        Printer::print_object(&spec_output, output)?;
+        Ok(())
     }
 }

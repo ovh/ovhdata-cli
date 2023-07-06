@@ -54,10 +54,12 @@ mod tests {
                 Parameter {
                     name: "parameter_1".to_string(),
                     value: "value_1".to_string(),
+                    secret: false,
                 },
                 Parameter {
                     name: "parameter_2".to_string(),
                     value: "value_2".to_string(),
+                    secret: false,
                 },
             ],
         }

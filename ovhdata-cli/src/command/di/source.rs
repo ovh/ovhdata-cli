@@ -98,9 +98,8 @@ impl SourceCommand {
 
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
-            Printer::print_object(&spec, &output)?;
-            let message = format!("Do you want to update the source {} ?", id);
-            let confirm = Printer::confirm(&message);
+            self.print_source_spec(&spec, &output)?;
+            let confirm = Printer::confirm(&format!("Do you want to update the source {} ?", id));
 
             let cmd = format!(
                 "di source update {} --service-name {} {}",
@@ -155,17 +154,16 @@ impl SourceCommand {
 
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
-            Printer::print_object(&spec, &output)?;
+            self.print_source_spec(&spec, &output)?;
             let confirm = Printer::confirm(&format!("Do you want to create the source {} ?", &input.name));
 
-            let cmd = format!(
+            Printer::print_command(&format!(
                 "di source create {} --service-name {} --connector-id {} {}",
                 &spec.name,
                 &service_name,
                 &connector_id,
                 ParametersWrapper(spec.parameters.clone())
-            );
-            Printer::print_command(&cmd);
+            ));
 
             if confirm.is_err() {
                 return Err(Error::custom("Create source canceled"));
@@ -218,5 +216,13 @@ impl SourceCommand {
         };
 
         Ok(id)
+    }
+
+    // Print spec with secret clearing
+    fn print_source_spec(&self, spec: &SourceSpec, output: &Output) -> Result<()> {
+        let mut spec_output = spec.clone();
+        spec_output.parameters = Printer::filter_parameters(&spec_output.parameters);
+        Printer::print_object(&spec_output, output)?;
+        Ok(())
     }
 }
