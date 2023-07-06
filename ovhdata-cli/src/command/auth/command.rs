@@ -46,14 +46,7 @@ impl Auth {
                 // test connection
                 Printer::println_success(&mut stdout(), "Current connection infos...");
 
-                let ovhapiv6_client = OVHapiV6Client::new(
-                    Config::get().ovhapiv6.endpoint_url.clone(),
-                    creds.application_key.clone().unwrap(),
-                    creds.application_secret.clone().unwrap(),
-                    creds.consumer_key.clone().unwrap(),
-                );
-
-                let creds_result = ovhapiv6_client.current_credential().await;
+                let creds_result = self.build_ovhapiv6_client(&creds).current_credential().await;
 
                 if creds_result.is_ok() {
                     Printer::print_object(&creds_result.unwrap(), &output)?;
@@ -96,7 +89,7 @@ impl Auth {
             // Ask Application Secret
             let application_secret = match application_secret {
                 Some(application_secret) => application_secret,
-                None => Printer::ask_password("Application Secret")?,
+                None => Printer::ask_password("Application Secret", false).unwrap(),
             };
             if application_secret.is_empty() {
                 return Err(Error::UserInput);
@@ -125,14 +118,7 @@ impl Auth {
         };
 
         // test connection
-        let ovhapiv6_client = OVHapiV6Client::new(
-            Config::get().ovhapiv6.endpoint_url.clone(),
-            creds.application_key.clone().unwrap(),
-            creds.application_secret.clone().unwrap(),
-            creds.consumer_key.clone().unwrap(),
-        );
-
-        let cred_details = ovhapiv6_client.current_credential().await?;
+        let cred_details = self.build_ovhapiv6_client(&creds).current_credential().await?;
         Printer::print_object(&cred_details, &output)?;
 
         // Store api credentials
@@ -150,5 +136,14 @@ impl Auth {
         }
 
         Ok(())
+    }
+
+    fn build_ovhapiv6_client(&self, creds: &Ovhapiv6Credentials) -> OVHapiV6Client {
+        OVHapiV6Client::new(
+            Config::get().ovhapiv6.endpoint_url.clone(),
+            creds.application_key.clone().unwrap(),
+            creds.application_secret.clone().unwrap(),
+            creds.consumer_key.clone().unwrap(),
+        )
     }
 }

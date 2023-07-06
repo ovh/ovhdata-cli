@@ -101,6 +101,21 @@ impl Printer {
         }
     }
 
+    pub fn filter_parameters(input_parameters: &[Parameter]) -> Vec<Parameter> {
+        input_parameters
+            .iter()
+            .map(|param| Parameter {
+                name: param.name.clone(),
+                value: if param.secret {
+                    "[secret_hidden]".to_string()
+                } else {
+                    param.value.clone()
+                },
+                secret: param.secret,
+            })
+            .collect()
+    }
+
     pub fn ask_connector_parameters(
         input: &[NameValue],
         api: Option<&Vec<Parameter>>,
@@ -125,8 +140,21 @@ impl Printer {
         // Non interactive mode
         // input_parameter have always the priority
         if !input_parameters.is_empty() {
-            let value = Vec::from_iter(input_parameters.into_values());
-            return Ok(value);
+            let params = connector_parameters
+                .iter()
+                .filter(|connector_parameter| input_parameters.contains_key(&connector_parameter.name))
+                .map(|connector_parameter| {
+                    // Adds the secret field to the parameter
+                    // used internally for never display secret
+                    let mut param = input_parameters.get(&connector_parameter.name).unwrap().to_owned();
+
+                    if connector_parameter.type_name == "secret" {
+                        param.secret = true;
+                    }
+                    param
+                })
+                .collect();
+            return Ok(params);
         }
 
         // Interactive mode (input_parameter empty)
@@ -154,6 +182,7 @@ impl Printer {
         match option_validator {
             Some(validator) => match type_name {
                 "string" => "None (string by default)".to_string(),
+                "secret" => "None (string by default)".to_string(),
                 "boolean" => "(true, True, false, False)".to_string(),
                 "int" => {
                     if validator.min == validator.max {
@@ -191,6 +220,7 @@ impl Printer {
             None
         };
 
+        let mut parameter_secret = false;
         let parameter_value = match connector_parameter.type_name.clone().as_str() {
             "string" => {
                 let value = Printer::ask_input_string(&prompt, current_value.clone(), connector_parameter.mandatory.not(), default_value);
@@ -202,6 +232,10 @@ impl Printer {
                 } else {
                     None
                 }
+            }
+            "secret" => {
+                parameter_secret = true;
+                Printer::ask_password(&prompt, connector_parameter.mandatory.not())
             }
             "int" => {
                 let validator = connector_parameter.validator.clone().unwrap();
@@ -243,6 +277,7 @@ impl Printer {
             let param = Parameter {
                 name: connector_parameter.name.clone(),
                 value,
+                secret: parameter_secret,
             };
             Ok(Option::from(param))
         } else {
@@ -333,13 +368,17 @@ impl Printer {
         Ok(true)
     }
 
-    pub fn ask_password(prompt: &str) -> Result<String> {
-        Password::new()
+    pub fn ask_password(prompt: &str, allow_empty: bool) -> Option<String> {
+        let color_binding = ColorfulTheme::default();
+        let mut password_binding = Password::with_theme(&color_binding);
+
+        password_binding
             .with_prompt(prompt)
-            .allow_empty_password(true)
+            .allow_empty_password(allow_empty)
             .report(false)
             .interact()
-            .map_err(|_| Error::UserInput)
+            .map(|s: String| s.is_empty().not().then_some(s))
+            .unwrap()
     }
 
     pub fn println_success(write: &mut dyn Write, msg: &str) {
