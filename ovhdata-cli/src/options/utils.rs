@@ -33,6 +33,7 @@ impl From<NameValue> for Parameter {
         Parameter {
             name: env.name,
             value: env.value,
+            secret: false,
         }
     }
 }

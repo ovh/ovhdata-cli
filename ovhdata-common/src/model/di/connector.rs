@@ -1,7 +1,10 @@
+use crate::model::di::common::EnsureSecret;
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+use ovhdata_macros::PrintObjectCompletely;
+
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 #[descriptor(default_headers = ["name", "id", "version"])]
 pub struct SourceConnector {
@@ -16,7 +19,7 @@ pub struct SourceConnector {
     pub parameters: Vec<ConnectorParameter>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 #[descriptor(default_headers = ["name", "id", "version"])]
 pub struct DestinationConnector {

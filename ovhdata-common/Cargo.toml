@@ -5,7 +5,11 @@ authors = ["Sébastien Lambour <sebastien.lambour@ovhcloud.com>", "Claire Gallot
 edition = "2021"
 license-file = "../LICENSE"
 
+
 [dependencies]
+# internal dependencies
+ovhdata-macros = { path = "../ovhdata-macros" }
+
 async-trait = "0.1"
 bytes = "1.4.0"
 chrono = { version = "0.4", features = ["serde"] }
@@ -19,11 +23,11 @@ number_prefix = "0.4"
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.28", features = ["full"] }
+tokio = { version = "1.29", features = ["full"] }
 sha1 = "0.10.5"
 thiserror = "1.0"
 url = "2.4"
-uuid = { version = "1.3", features = ["v4", "serde"] }
+uuid = { version = "1.4", features = ["v4", "serde"] }
 
 # Logging + Telemetry
 tracing = { version = "0.1", features = ["log"] }
@@ -31,9 +35,3 @@ tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-bunyan-formatter = "0.3"
 tracing-log = "0.1"
 time = { version = "0.3", default-features = false, features = ["formatting"] }
-
-[dev-dependencies]
-tracing-test = "0.1"
-# To compare 2 directories
-dir-diff = "0.3.2"
-criterion = { version = "0.4", features = ["async_tokio"] }

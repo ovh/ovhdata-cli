@@ -98,7 +98,7 @@ impl SourceCommand {
 
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
-            self.print_source_spec(&spec, &output)?;
+            Printer::print_object(&spec, &output)?;
             let confirm = Printer::confirm(&format!("Do you want to update the source {} ?", id));
 
             let cmd = format!(
@@ -154,7 +154,7 @@ impl SourceCommand {
 
         // new parameters we are in interactive mode
         if interactive || parameters_len > input.parameters.len() {
-            self.print_source_spec(&spec, &output)?;
+            Printer::print_object(&spec, &output)?;
             let confirm = Printer::confirm(&format!("Do you want to create the source {} ?", &input.name));
 
             Printer::print_command(&format!(
@@ -216,13 +216,5 @@ impl SourceCommand {
         };
 
         Ok(id)
-    }
-
-    // Print spec with secret clearing
-    fn print_source_spec(&self, spec: &SourceSpec, output: &Output) -> Result<()> {
-        let mut spec_output = spec.clone();
-        spec_output.parameters = Printer::filter_parameters(&spec_output.parameters);
-        Printer::print_object(&spec_output, output)?;
-        Ok(())
     }
 }

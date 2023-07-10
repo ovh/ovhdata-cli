@@ -1,11 +1,13 @@
 use chrono::{DateTime, Utc};
-
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
+use ovhdata_macros::PrintObjectCompletely;
+
+use crate::model::di::common::EnsureSecret;
 use crate::model::utils::{AgeEntity, DescribedDateTime};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 #[descriptor(default_headers = ["id", "status", "age", "duration"])]
 #[descriptor(extra_fields = AgeEntity)]

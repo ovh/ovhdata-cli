@@ -9,6 +9,8 @@ use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard};
 
 use ovhdata_common::config::{AllConfig, ConfigName};
+use ovhdata_common::model::di::common::EnsureSecret;
+use ovhdata_macros::PrintObjectCompletely;
 
 use crossterm::style::Stylize;
 use descriptor::Descriptor;
@@ -49,6 +51,14 @@ pub struct Ovhapiv6Credentials {
     pub application_key: Option<String>,
     pub application_secret: Option<String>,
     pub consumer_key: Option<String>,
+}
+
+impl EnsureSecret<Ovhapiv6Credentials> for Ovhapiv6Credentials {
+    fn hide_secrets(&self) -> Ovhapiv6Credentials {
+        let mut creds = self.clone();
+        creds.application_secret = Some("[hidden_secret]".to_string());
+        creds
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -269,7 +279,7 @@ pub enum Toggle {
     HelpLogin,
 }
 
-#[derive(Clone, Serialize, Deserialize, Descriptor)]
+#[derive(Clone, Serialize, Deserialize, Descriptor, PrintObjectCompletely)]
 #[descriptor(default_headers = ["name"])]
 pub struct Config {
     #[descriptor(rename_header = "NAME")]
@@ -367,7 +377,7 @@ impl Config {
     }
 
     fn load_region_default(region: Region) -> Result<ovhdata_common::config::Config> {
-        let mut _config_val = serde_json::from_str(match region {
+        let _config_val = serde_json::from_str(match region {
             Region::CA => CONFIG_CA,
             Region::EU => CONFIG_EU,
         })?;
