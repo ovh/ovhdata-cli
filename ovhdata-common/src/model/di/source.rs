@@ -3,10 +3,12 @@ use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-use crate::model::di::common::Parameter;
+use crate::model::di::common::{EnsureSecret, Parameter};
 use crate::model::utils::{AgeEntity, DescribedDateTime};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+use ovhdata_macros::PrintObjectCompletely;
+
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 #[descriptor(default_headers = ["name", "id", "connector_id", "status", "age", "last_update"])]
 #[descriptor(extra_fields = AgeEntity)]
@@ -33,6 +35,14 @@ pub struct SourceSpec {
     #[descriptor(output_table)]
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub parameters: Vec<Parameter>,
+}
+
+impl EnsureSecret<SourceSpec> for SourceSpec {
+    fn hide_secrets(&self) -> SourceSpec {
+        let mut source_spec = self.clone();
+        source_spec.parameters = self.parameters.iter().map(|param| param.hide_secrets()).collect();
+        source_spec
+    }
 }
 
 #[cfg(test)]

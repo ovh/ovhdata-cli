@@ -1,13 +1,15 @@
 use chrono::{DateTime, Utc};
-
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
+use ovhdata_macros::PrintObjectCompletely;
+
+use crate::model::di::common::EnsureSecret;
 use crate::model::utils::OptionDescribedDateTime;
 
 pub type TablesMeta = Vec<TableMeta>;
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct TableMeta {
     pub table_name: Option<String>,

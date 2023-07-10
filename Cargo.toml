@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "ovhdata-cli",
-    "ovhdata-common"
+    "ovhdata-common",
+    "ovhdata-macros"
 ]
 
 [profile.release]

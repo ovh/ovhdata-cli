@@ -15,6 +15,7 @@ use pulldown_cmark::{Event, HeadingLevel, Parser, Tag};
 use serde::Serialize;
 use spinners::{Spinner, Spinners};
 
+use ovhdata_common::model::di::common::EnsureSecret;
 use ovhdata_common::model::di::common::Parameter;
 use ovhdata_common::model::di::connector::{ConnectorParameter, ConnectorValidator};
 use ovhdata_common::BUG;
@@ -99,21 +100,6 @@ impl Printer {
         } else {
             Err(Error::custom("Value not selected"))
         }
-    }
-
-    pub fn filter_parameters(input_parameters: &[Parameter]) -> Vec<Parameter> {
-        input_parameters
-            .iter()
-            .map(|param| Parameter {
-                name: param.name.clone(),
-                value: if param.secret {
-                    "[secret_hidden]".to_string()
-                } else {
-                    param.value.clone()
-                },
-                secret: param.secret,
-            })
-            .collect()
     }
 
     pub fn ask_connector_parameters(
@@ -391,17 +377,19 @@ impl Printer {
 
     pub fn print_object<T>(data: &T, output: &Output) -> Result<()>
     where
-        T: Serialize + Describe,
+        T: Serialize + Describe + EnsureSecret<T>,
     {
+        let output_data = data.hide_secrets();
+
         match output {
             Output::Table(headers) => {
-                Describer::describe_list_with_header(std::slice::from_ref(data), headers, &mut stdout(), descriptor::Context::default())?;
+                Describer::describe_list_with_header(std::slice::from_ref(&output_data), headers, &mut stdout(), descriptor::Context::default())?;
                 Ok(())
             }
-            Output::Json => Self::print_json(data),
-            Output::Yaml => Self::print_yaml(data),
+            Output::Json => Self::print_json(&output_data),
+            Output::Yaml => Self::print_yaml(&output_data),
             Output::Description => {
-                object_describe(data, &mut stdout())?;
+                object_describe(&output_data, &mut stdout())?;
                 Ok(())
             }
         }

@@ -1,7 +1,11 @@
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+use ovhdata_macros::PrintObjectCompletely;
+
+use crate::model::di::common::EnsureSecret;
+
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct CredentialDetails {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

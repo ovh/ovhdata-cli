@@ -1,7 +1,10 @@
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+use crate::model::di::common::EnsureSecret;
+use ovhdata_macros::PrintObjectCompletely;
+
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct Me {
     pub user: Option<String>,

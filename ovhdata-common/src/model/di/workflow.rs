@@ -1,10 +1,13 @@
-use crate::model::di::common::{ErrorDetails, Parameter};
-use crate::model::utils::{AgeEntity, DescribedDateTime};
 use chrono::{DateTime, Utc};
 use descriptor::Descriptor;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+use ovhdata_macros::PrintObjectCompletely;
+
+use crate::model::di::common::{EnsureSecret, ErrorDetails, Parameter};
+use crate::model::utils::{AgeEntity, DescribedDateTime};
+
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 #[descriptor(default_headers = ["name", "enabled", "id", "source_name", "destination_name", "schedule", "last_execution", "status"])]
 #[descriptor(extra_fields = AgeEntity)]
@@ -26,7 +29,7 @@ pub struct Workflow {
     pub error_details: Option<ErrorDetails>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkflowSpec {
     pub name: String,
@@ -38,7 +41,7 @@ pub struct WorkflowSpec {
     pub enabled: bool,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkflowPatch {
     pub name: Option<String>,
@@ -47,7 +50,7 @@ pub struct WorkflowPatch {
     pub enabled: Option<bool>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Descriptor)]
+#[derive(Debug, Clone, Deserialize, Serialize, Descriptor, PrintObjectCompletely)]
 #[serde(rename_all = "camelCase")]
 pub struct JobPost {
     // api mandatory parameter, not used yet
