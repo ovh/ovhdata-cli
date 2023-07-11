@@ -1,10 +1,14 @@
+use std::backtrace::Backtrace;
 use std::fs::OpenOptions;
 use std::io::stdout;
+use std::panic;
 use std::process::exit;
 
+use clap::crate_version;
 use clap::error::ErrorKind;
 use clap::Parser;
 use crossterm::tty::IsTty;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tracing::{error, info};
 use tracing_subscriber::fmt::writer::Tee;
 use tracing_subscriber::EnvFilter;
@@ -32,8 +36,29 @@ mod logging;
 mod options;
 mod utils;
 
+static LOGGER_INITIALIZED: AtomicBool = AtomicBool::new(false);
+
 #[tokio::main]
 async fn main() {
+    // Panic station
+    panic::set_hook(Box::new(|error| {
+        let stacktrace = Backtrace::force_capture();
+
+        // Force write log file
+        init_log(2, false);
+
+        error!("Unexpected Error: @error:{}\n@stackTrace:{}", error, stacktrace);
+
+        Printer::eprintln_fail("Something went unexpected, please report an issue.");
+        Printer::eprintln_fail(&format!("Ovhdata-cli version:{}", crate_version!()));
+
+        eprintln!();
+        eprintln!("To print the full logs of this command:");
+        eprintln!("> {} debug {}", CLI_NAME, *SESSION_ID);
+
+        std::process::abort();
+    }));
+
     // Parse command line
     let result: clap::error::Result<Opts> = Opts::try_parse();
 
@@ -98,10 +123,16 @@ fn init_log(verbosity: u8, json: bool) {
         return;
     }
 
+    // Return if already initialized
+    if LOGGER_INITIALIZED.load(Ordering::Relaxed) {
+        return;
+    }
+
     let log_file_path = logging::LOG_FILE.clone();
     // Create log directory if needed
     let mut log_directory = log_file_path.clone();
     log_directory.pop();
+
     if let Err(error) = std::fs::create_dir_all(log_directory.as_path()) {
         eprintln!("unable to create log directory {:?}: {:?}", log_directory, error);
         return;
@@ -122,12 +153,16 @@ fn init_log(verbosity: u8, json: bool) {
             };
             if let Err(error) = result {
                 eprintln!("Logger error: {:?}", error);
+                return;
             }
         }
         Err(error) => {
             eprintln!("error opening {:?} error: {:?}", log_file_path, error);
+            return;
         }
     }
+
+    LOGGER_INITIALIZED.store(true, Ordering::Relaxed);
 }
 
 /// Execute a command
