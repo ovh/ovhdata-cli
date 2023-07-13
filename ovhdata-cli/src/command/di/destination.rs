@@ -149,7 +149,8 @@ impl DestinationCommand {
             let confirm = Printer::confirm(&format!("Do you want to update the destination {} ?", id));
 
             Printer::print_command(&format!(
-                "di destination update {} --service-name {} {}",
+                "di destination update {} {} --service-name {} {}",
+                &id,
                 &spec.name,
                 &service_name,
                 ParametersWrapper(spec.parameters.clone())
