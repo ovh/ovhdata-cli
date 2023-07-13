@@ -48,6 +48,7 @@ pub enum DiSubSourceCommands {
     /// Update a new source
     Update(SourceUpdate),
     /// Delete a source
+    #[clap(visible_alias = "rm")]
     Delete(SourceDelete),
 }
 
@@ -127,6 +128,7 @@ pub enum DiSubDestCommands {
     /// Update a destination
     Update(DestUpdate),
     /// Delete a destination
+    #[clap(visible_alias = "rm")]
     Delete(DestDelete),
 }
 
@@ -194,6 +196,7 @@ pub enum DiSubWorkflowCommands {
     /// Create a new workflow
     Create(WorkflowCreate),
     /// Delete a workflow
+    #[clap(visible_alias = "rm")]
     Delete(WorkflowDelete),
     /// Run a job of the worflow
     Run(WorkflowRun),
