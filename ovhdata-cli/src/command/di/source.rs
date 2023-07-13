@@ -102,7 +102,8 @@ impl SourceCommand {
             let confirm = Printer::confirm(&format!("Do you want to update the source {} ?", id));
 
             let cmd = format!(
-                "di source update {} --service-name {} {}",
+                "di source update {} {} --service-name {} {}",
+                &id,
                 &spec.name,
                 &service_name,
                 ParametersWrapper(spec.parameters.clone())
