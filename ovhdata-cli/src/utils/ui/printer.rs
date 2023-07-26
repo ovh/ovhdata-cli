@@ -93,7 +93,7 @@ impl Printer {
             .default(0)
             .report(false)
             .with_initial_text(default_selection.unwrap_or_default())
-            .interact_on(&Term::stderr())?;
+            .interact_on(&Term::stderr()).unwrap_or_default();
 
         if let Some(selected) = data.get(selection) {
             Ok(selected)
@@ -275,14 +275,14 @@ impl Printer {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty);
+        input_binding = input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty);
 
         if let Some(default_input) = default {
-            input_binding.default(default_input);
+            input_binding = input_binding.default(default_input);
         }
 
         if let Some(text) = initial_text {
-            input_binding.with_initial_text(text);
+            input_binding = input_binding.with_initial_text(text);
         }
 
         input_binding.interact_text().map(|s: String| s.is_empty().not().then_some(s)).unwrap()
@@ -298,7 +298,7 @@ impl Printer {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty).validate_with({
+        input_binding = input_binding.with_prompt(prompt).report(false).allow_empty(allow_empty).validate_with({
             move |input: &String| -> std::result::Result<(), String> {
                 let test = input.parse::<i64>();
                 match test {
@@ -317,11 +317,11 @@ impl Printer {
         });
 
         if let Some(default_input) = default {
-            input_binding.default(default_input);
+            input_binding = input_binding.default(default_input);
         }
 
         if let Some(text) = initial_text {
-            input_binding.with_initial_text(text);
+            input_binding = input_binding.with_initial_text(text);
         }
 
         input_binding.interact_text().map(|s: String| s.is_empty().not().then_some(s)).unwrap()
@@ -339,16 +339,16 @@ impl Printer {
         let color_binding = ColorfulTheme::default();
         let mut input_binding = Input::with_theme(&color_binding);
 
-        input_binding.with_prompt(prompt);
+        input_binding = input_binding.with_prompt(prompt);
 
         if let Some(text) = initial_text {
-            input_binding.with_initial_text(text);
+            input_binding = input_binding.with_initial_text(text);
         }
         input_binding.interact().map_err(|_| Error::UserInput)
     }
 
     pub fn confirm(message: &str) -> Result<bool> {
-        if !Confirm::with_theme(&ColorfulTheme::default()).with_prompt(message).interact()? {
+        if !Confirm::with_theme(&ColorfulTheme::default()).with_prompt(message).interact().unwrap_or_default() {
             return Err(Error::custom("Operation cancelled by user"));
         }
         Ok(true)

@@ -18,7 +18,7 @@ clap_complete = "4.3.2"
 console = "0.15.7"
 crossterm = "0.26"
 descriptor = "0.0.4"
-dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
+dialoguer = { git = "https://github.com/console-rs/dialoguer.git", rev="dfd6e22", features = ["fuzzy-select"] }
 dirs = "5.0"
 filetime = "0.2"
 lazy_static = "1.4"
