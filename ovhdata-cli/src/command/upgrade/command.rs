@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
-#[cfg(not(target_os = "windows"))]
+use std::process::exit;
 use std::process::Command;
 
 use chrono::{Duration, Utc};
@@ -114,21 +114,7 @@ impl Upgrade {
         self.upgrade_os(quiet, &last_version).await
     }
 
-    #[cfg(target_os = "windows")]
-    pub async fn upgrade_os(&self, quiet: bool, _last_version: &Version) -> Result<()> {
-        if !quiet {
-            eprintln!("Auto-upgrade is not available for Windows yet.");
-            eprintln!("Please download the new version of the CLI at {}", Self::get_binary_url().await?);
-
-            Printer::eprintln_fail("Upgrade canceled.");
-        }
-        Ok(())
-    }
-
-    #[cfg(not(target_os = "windows"))]
     pub async fn upgrade_os(&self, quiet: bool, last_version: &Version) -> Result<()> {
-        use std::os::unix::process::CommandExt;
-
         let spinner = Printer::start_spinner(&format!("Downloading new version {}", last_version.to_string().green()));
 
         let mut tmp_dir = std::env::temp_dir();
@@ -146,11 +132,19 @@ impl Upgrade {
 
         // Replace current executable
         let current_exe_path = std::env::current_exe()?;
+        let mut sav_exe_path = current_exe_path.clone();
+        sav_exe_path.set_extension("sav");
+
+        // On windows we cannot delete the file of a running process
+        // Delete sav file if exists
+        if fs::metadata(&sav_exe_path).is_ok() {
+            fs::remove_file(&sav_exe_path)?
+        }
 
         let perms = fs::metadata(&current_exe_path)?.permissions();
         file.set_permissions(perms).await?;
 
-        fs::remove_file(&current_exe_path)?;
+        fs::rename(&current_exe_path, &sav_exe_path)?;
         fs::copy(&tmp_dir, &current_exe_path)?;
 
         Printer::println_success(&mut stderr(), "New version installed");
@@ -158,7 +152,15 @@ impl Upgrade {
         // Execute updated executable (program stops there)
         // If quiet is false the command is 'upgrade', so no need to launch the command again
         if quiet {
-            Err(Command::new(&current_exe_path).args(std::env::args().skip(1)).exec())?;
+            let mut child = Command::new(&current_exe_path)
+                .args(std::env::args().skip(1))
+                .spawn()
+                .unwrap_or_else(|_| panic!("Failed to spawn the new {}", CLI_NAME));
+
+            // Wait for the spawned process to finish and get the exit status
+            let status = child.wait().expect("Failed to wait for child process");
+
+            exit(status.code().unwrap_or(-1));
         }
 
         Ok(())
