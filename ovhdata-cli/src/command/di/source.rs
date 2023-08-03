@@ -3,11 +3,12 @@ use std::io::stdout;
 
 use ovhdata_common::model::di::common::ParametersWrapper;
 use ovhdata_common::model::di::source::SourceSpec;
+use ovhdata_common::model::utils::sort_source;
 use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 
 use crate::command::di::source_metadata::SourceMetadataCommand;
 use crate::config::Context;
-use crate::options::{DiSubSourceCommands, SourceCreate, SourceDelete, SourceGet, SourceUpdate};
+use crate::options::{DiSubSourceCommands, SourceCreate, SourceList, SourceDelete, SourceGet, SourceUpdate};
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::{Error, Result};
 
@@ -18,12 +19,12 @@ pub struct SourceCommand {
 impl SourceCommand {
     pub fn new(rcp_client: OVHapiV6Client) -> Self {
         Self { rcp_client }
-    }
+    }                 
 
     pub async fn execute_command(&self, commands: DiSubSourceCommands) -> Result<()> {
         match commands {
             DiSubSourceCommands::Status(src_get) => self.get_last_connection_status(&src_get, src_get.output.unwrap_or_default().into()).await,
-            DiSubSourceCommands::List(source_list) => self.list(source_list.output.unwrap_or_default().into()).await,
+            DiSubSourceCommands::List(source_list) => self.list(&source_list, source_list.output.clone().unwrap_or_default().into()).await,
             DiSubSourceCommands::Get(source_get) => self.get(&source_get, source_get.output.unwrap_or_default().into()).await,
             DiSubSourceCommands::Metadata(subcmd) => SourceMetadataCommand::new(self.rcp_client.clone()).execute_command(subcmd).await,
             DiSubSourceCommands::Create(source_create) => self.create(&source_create, source_create.output.unwrap_or_default().into()).await,
@@ -33,11 +34,17 @@ impl SourceCommand {
         }
     }
 
-    async fn list(&self, output: Output) -> Result<()> {
+    async fn list(&self, input: &SourceList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let sources = self.rcp_client.clone().di_sources(&service_name).await?;
-        Printer::print_list(&sources, &output)?;
+        let sources = self.rcp_client.clone().di_sources_filtered(&service_name, input.filter.clone()).await?;
+        let sorted_sources = sort_source(sources, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        
+        if !input.force && (output != Output::Json && output != Output::Yaml) {
+            Printer::print_interactive_list(&sorted_sources, None)?;
+        } else {
+            Printer::print_list(&sorted_sources, &output)?;
+        }
         Ok(())
     }
 
