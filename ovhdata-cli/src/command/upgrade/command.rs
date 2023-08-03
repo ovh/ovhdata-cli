@@ -94,6 +94,7 @@ impl Upgrade {
                     }
                     "Always" => {
                         let mut context = Context::get();
+                        context.features.auto_upgrade = true;
                         context.features.confirm_before_upgrade = false;
                         context.save()?;
                     }
