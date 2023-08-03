@@ -417,6 +417,26 @@ impl Printer {
         Ok(())
     }
 
+    pub fn print_interactive_list<T: Describe>(data: &[T], default_selection: Option<String>) -> Result<()> {
+        let table = table_describe_to_string(data).unwrap();
+        let mut table_entries: Vec<_> = table.split('\n').collect();
+
+        let prompt = format!("{} items in the list (use arrows to scroll and Esc or Enter to quit)\n  {}\n", table_entries.len()-1, table_entries.first().unwrap());
+        println!("{}", prompt);
+        table_entries.remove(0);
+
+        FuzzySelect::with_theme(&ColorfulTheme::default())
+            //.with_prompt(prompt)
+            .items(&table_entries)
+            .default(0)
+            .report(false)
+            .with_initial_text(default_selection.unwrap_or_default())
+            .interact_on_opt(&Term::stderr()).expect("failed to display the list");
+            
+        Ok(())
+        
+    }
+
     pub fn print_json<T: Serialize>(data: &T) -> Result<()> {
         serde_json::to_writer(io::stdout(), &data).map_err(Error::custom)?;
         println!();

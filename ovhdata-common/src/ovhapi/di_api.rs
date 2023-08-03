@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use hyper::HeaderMap;
 use reqwest::Method;
+use serde_json::Value;
 
-use crate::api::{Result, EMPTY_BODY};
+use crate::api::{Result, EMPTY_BODY, Error};
 use crate::model::di::common::Status;
 use crate::model::di::connector::{DestinationConnector, SourceConnector};
 use crate::model::di::destination::{Destination, DestinationSpec};
@@ -11,6 +12,7 @@ use crate::model::di::source::{Source, SourceSpec};
 use crate::model::di::source_metadata::TablesMeta;
 use crate::model::di::workflow::{JobPost, Workflow, WorkflowPatch, WorkflowSpec};
 use crate::ovhapi::OVHapiV6Client;
+use crate::utils::jsonpath;
 
 #[async_trait]
 pub trait DiApi {
@@ -26,6 +28,8 @@ pub trait DiApi {
 
     /// List all the sources for a service name
     async fn di_sources(&self, service_name: &str) -> Result<Vec<Source>>;
+    /// List all the sources for a service name and filter it with jsonpath filter
+    async fn di_sources_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Source>>;
     /// Get a source by ID
     async fn di_source(&self, service_name: &str, id: &str) -> Result<Source>;
     // Get a source status by ID
@@ -43,6 +47,8 @@ pub trait DiApi {
 
     /// List all the destinations for a service name
     async fn di_destinations(&self, service_name: &str) -> Result<Vec<Destination>>;
+    /// List all the destinations for a service name and filter it with jsonpath filter
+    async fn di_destinations_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Destination>>;
     /// Get a destination by ID
     async fn di_destination(&self, service_name: &str, id: &str) -> Result<Destination>;
     /// Get a destination status by ID
@@ -56,6 +62,8 @@ pub trait DiApi {
 
     /// List all the workflows for a service name
     async fn di_workflows(&self, service_name: &str) -> Result<Vec<Workflow>>;
+    /// List all the workflows for a service name and filter it with jsonpath filter
+    async fn di_workflows_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Workflow>>;
     /// Get a workflow by ID
     async fn di_workflow(&self, service_name: &str, id: &str) -> Result<Workflow>;
     /// Create a new workflow for a service name
@@ -65,8 +73,10 @@ pub trait DiApi {
     /// Update a workflow
     async fn di_workflow_put(&self, service_name: &str, id: &str, spec: &WorkflowPatch) -> Result<Workflow>;
 
-    /// List all the jobs for a service name
+    /// List all the jobs for a service name and a workflow id
     async fn di_jobs(&self, service_name: &str, workflow_id: &str) -> Result<Vec<Job>>;
+    /// List all the jobs for a service name and a workflow id then filter it with jsonpath filter
+    async fn di_jobs_filtered(&self, service_name: &str, workflow_id: &str, filter: Option<String>) -> Result<Vec<Job>>;
     /// Get a job by ID
     async fn di_job(&self, service_name: &str, id: &str, workflow_id: &str) -> Result<Job>;
     /// Start a new job for a workflow
@@ -145,6 +155,26 @@ impl DiApi for OVHapiV6Client {
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await
+    }
+
+    async fn di_sources_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Source>> {
+        let request = self
+            .build_request(
+                Method::GET,
+                &["cloud", "project", service_name, "dataIntegration", "sources"],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+
+        // Filter the list before parsing it with jsonpath filter
+        let body_string = response.body_text().await;
+        let json : Value = serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))?;
+
+        let new_response = jsonpath::json_parse_task(json, filter).map_err(Error::FilterContent)?;
+        serde_json::from_value(new_response.clone()).map_err(|e| Error::DeserializeContent(e, new_response.clone().to_string()))
     }
 
     async fn di_source(&self, service_name: &str, id: &str) -> Result<Source> {
@@ -259,6 +289,26 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
+    async fn di_destinations_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Destination>> {
+        let request = self
+            .build_request(
+                Method::GET,
+                &["cloud", "project", service_name, "dataIntegration", "destinations"],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+
+        // Filter the list before parsing it with jsonpath filter
+        let body_string = response.body_text().await;
+        let json : Value = serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))?;
+
+        let new_response = jsonpath::json_parse_task(json, filter).map_err(Error::FilterContent)?;
+        serde_json::from_value(new_response.clone()).map_err(|e| Error::DeserializeContent(e, new_response.clone().to_string()))
+    }
+
     async fn di_destination(&self, service_name: &str, id: &str) -> Result<Destination> {
         let request = self
             .build_request(
@@ -343,6 +393,27 @@ impl DiApi for OVHapiV6Client {
         response.parse().await
     }
 
+    async fn di_workflows_filtered(&self, service_name: &str, filter: Option<String>) -> Result<Vec<Workflow>> {
+        let request = self
+            .build_request(
+                Method::GET,
+                &["cloud", "project", service_name, "dataIntegration", "workflows"],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+
+        // Filter the list before parsing it with jsonpath filter
+        let body_string = response.body_text().await;
+        let json : Value = serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))?;
+
+        let new_response = jsonpath::json_parse_task(json, filter).map_err(Error::FilterContent)?;
+        serde_json::from_value(new_response.clone()).map_err(|e| Error::DeserializeContent(e, new_response.clone().to_string()))
+    }
+
+
     async fn di_workflow(&self, service_name: &str, id: &str) -> Result<Workflow> {
         let request = self
             .build_request(
@@ -411,6 +482,26 @@ impl DiApi for OVHapiV6Client {
             .await?;
         let response = request.send(&self.client, &[]).await?;
         response.parse().await
+    }
+
+    async fn di_jobs_filtered(&self, service_name: &str, workflow_id: &str, filter: Option<String>) -> Result<Vec<Job>> {
+        let request = self
+            .build_request(
+                Method::GET,
+                &["cloud", "project", service_name, "dataIntegration", "workflows", workflow_id, "jobs"],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+
+        // Filter the list before parsing it with jsonpath filter
+        let body_string = response.body_text().await;
+        let json : Value = serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))?;
+
+        let new_response = jsonpath::json_parse_task(json, filter).map_err(Error::FilterContent)?;
+        serde_json::from_value(new_response.clone()).map_err(|e| Error::DeserializeContent(e, new_response.clone().to_string()))
     }
 
     async fn di_job(&self, service_name: &str, workflow_id: &str, id: &str) -> Result<Job> {

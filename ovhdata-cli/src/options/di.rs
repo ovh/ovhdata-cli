@@ -62,9 +62,21 @@ pub enum SourceSubMetaCommands {
 
 #[derive(Parser)]
 pub struct SourceList {
+    /// Filters to apply to the sources list (jsonpath filter)
+    #[clap(long = "filter")]
+    pub filter: Option<String>,
+    /// Field by witch the list will be ordered (default: by name)
+    #[clap(long, value_parser = PossibleValuesParser::new(["age", "update", "status", "connector", "name"]))]
+    pub order: Option<String>,
+    /// Return list in descending order (if not present the default behaviour is ascending)
+    #[clap(long, action)]
+    pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
+    /// To pervent interactive display of the list
+    #[clap(long, short, action)]
+    pub force: bool,
 }
 
 #[derive(Parser)]
@@ -134,9 +146,21 @@ pub enum DiSubDestCommands {
 
 #[derive(Parser)]
 pub struct DestList {
+    /// Filters to apply to the destinations list (jsonpath filter)
+    #[clap(long = "filter")]
+    pub filter: Option<String>,
+    /// Field by witch the list will be ordered (default: by name)
+    #[clap(long, value_parser = PossibleValuesParser::new(["age", "update", "status", "connector", "name"]))]
+    pub order: Option<String>,
+    /// Return list in descending order (if not present the default behaviour is ascending)
+    #[clap(long, action)]
+    pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
+    /// To pervent interactive display of the list
+    #[clap(long, short, action)]
+    pub force: bool,
 }
 
 #[derive(Parser)]
@@ -210,9 +234,21 @@ pub enum DiSubWorkflowCommands {
 
 #[derive(Parser)]
 pub struct WorkflowList {
+    /// Filters to apply to the workflows list (jsonpath filter)
+    #[clap(long = "filter")]
+    pub filter: Option<String>,
+    /// Field by witch the list will be ordered (default: by name)
+    #[clap(long, value_parser = PossibleValuesParser::new(["last-execution", "status", "enabled", "source-name", "destination-name"]))]
+    pub order: Option<String>,
+    /// Return list in descending order (if not present the default behaviour is ascending)
+    #[clap(long, action)]
+    pub desc: bool,
     /// Command output format
     #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
+    /// To pervent interactive display of the list
+    #[clap(long, short, action)]
+    pub force: bool,
 }
 
 #[derive(Parser)]
@@ -306,9 +342,21 @@ pub struct JobList {
     /// Workflow ID
     #[clap(long)]
     pub workflow_id: Option<String>,
+    /// Filters to apply to the jobs list (jsonpath filter)
+    #[clap(long = "filter")]
+    pub filter: Option<String>,
+    /// Field by witch the list will be ordered (default: by age)
+    #[clap(long, value_parser = PossibleValuesParser::new(["age", "status"]))]
+    pub order: Option<String>,
+    /// Return list in descending order (if not present the default behaviour is ascending)
+    #[clap(long, action)]
+    pub desc: bool,
     /// Command output format
     #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
+    /// To pervent interactive display of the list
+    #[clap(long, short, action)]
+    pub force: bool,
 }
 
 #[derive(Parser)]

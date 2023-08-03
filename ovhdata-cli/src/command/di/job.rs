@@ -1,5 +1,6 @@
 use crossterm::style::Stylize;
 use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
+use ovhdata_common::model::utils::sort_job;
 use std::io::stdout;
 
 use crate::config::Context;
@@ -39,8 +40,14 @@ impl JobCommand {
             Printer::print_command(&format!("di job list --service-name {} --workflow-id {}", &service_name, &workflow_id));
         }
 
-        let jobs = self.rcp_client.clone().di_jobs(&service_name, &workflow_id).await?;
-        Printer::print_list(&jobs, &output)?;
+        let jobs = self.rcp_client.clone().di_jobs_filtered(&service_name, &workflow_id,input.filter.clone()).await?;
+        let sorted_jobs = sort_job(jobs, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        
+        if !input.force && (output != Output::Json && output != Output::Yaml) && !interactive {
+            Printer::print_interactive_list(&sorted_jobs, None)?;
+        } else {
+            Printer::print_list(&sorted_jobs, &output)?;
+        }
         Ok(())
     }
 

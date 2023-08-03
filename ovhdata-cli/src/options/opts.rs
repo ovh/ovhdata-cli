@@ -158,11 +158,12 @@ pub enum OutputList {
     Table,
     Json,
     Yaml,
+    List
 }
 
 impl Default for OutputList {
     fn default() -> Self {
-        Self::Table
+        Self::List
     }
 }
 
@@ -172,6 +173,7 @@ impl From<OutputList> for Output {
             OutputList::Table => Output::default_table(),
             OutputList::Json => Output::Json,
             OutputList::Yaml => Output::Yaml,
+            OutputList::List => Output::default_table()
         }
     }
 }
@@ -184,6 +186,7 @@ impl FromStr for OutputList {
             "table" => Ok(OutputList::Table),
             "json" => Ok(OutputList::Json),
             "yaml" => Ok(OutputList::Yaml),
+
             _ => Err(ParseError::OutputParse),
         }
     }

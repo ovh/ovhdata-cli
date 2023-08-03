@@ -1,5 +1,6 @@
 use reqwest::StatusCode;
 use thiserror::Error as ThisError;
+use crate::utils::jsonpath::JsonPathError;
 
 #[derive(ThisError, Debug)]
 pub enum Error {
@@ -9,6 +10,8 @@ pub enum Error {
     Response(StatusCode, String),
     #[error("deserialize error: {0}, string is {1}")]
     DeserializeContent(serde_json::Error, String),
+    #[error("filtering error: {0}")]
+    FilterContent(JsonPathError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

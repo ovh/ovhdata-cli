@@ -2,7 +2,7 @@ mod config;
 mod di;
 mod opts;
 mod parse;
-mod utils;
+pub mod utils;
 
 pub use config::*;
 pub use di::*;
