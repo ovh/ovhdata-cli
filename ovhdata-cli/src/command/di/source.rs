@@ -29,6 +29,7 @@ impl SourceCommand {
             DiSubSourceCommands::Create(source_create) => self.create(&source_create, source_create.output.unwrap_or_default().into()).await,
             DiSubSourceCommands::Update(source_update) => self.update(&source_update, source_update.output.unwrap_or_default().into()).await,
             DiSubSourceCommands::Delete(source_delete) => self.delete(&source_delete).await,
+            DiSubSourceCommands::TestConnection(source_test) => self.test_connection(&source_test, source_test.output.unwrap_or_default().into()).await,
         }
     }
 
@@ -50,6 +51,23 @@ impl SourceCommand {
         }
 
         let source = self.rcp_client.clone().di_source(&service_name, &id).await?;
+        Printer::print_object(&source, &output)?;
+        Ok(())
+    }
+
+    async fn test_connection(&self, input: &SourceGet, output: Output) -> Result<()> {
+        let service_name = Context::get().get_current_service_name().unwrap();
+
+        let id = self.get_source_id(&service_name, &input.id).await?;
+
+        if input.id.is_none() {
+            Printer::print_command(&format!("di source test-connection {} --service-name {} ", &id, &service_name));
+        }
+
+        let spinner = Printer::start_spinner("Testing source connection");
+        let source = self.rcp_client.clone().di_source_test(&service_name, &id).await?;
+        Printer::stop_spinner(spinner);
+
         Printer::print_object(&source, &output)?;
         Ok(())
     }

@@ -30,6 +30,7 @@ impl DestinationCommand {
             DiSubDestCommands::Create(dest_create) => self.create(&dest_create, dest_create.output.unwrap_or_default().into()).await,
             DiSubDestCommands::Update(dest_update) => self.update(&dest_update, dest_update.output.unwrap_or_default().into()).await,
             DiSubDestCommands::Delete(destination_delete) => self.delete(&destination_delete).await,
+            DiSubDestCommands::TestConnection(dest_test) => self.test_connection(&dest_test, dest_test.output.unwrap_or_default().into()).await,
         }
     }
 
@@ -52,6 +53,22 @@ impl DestinationCommand {
 
         let destination = self.rcp_client.clone().di_destination(&service_name, &id).await?;
         Printer::print_object(&destination, &output)?;
+        Ok(())
+    }
+
+    async fn test_connection(&self, input: &DestGet, output: Output) -> Result<()> {
+        let service_name = Context::get().get_current_service_name().unwrap();
+        let id = self.get_destination_id(&service_name, &input.id).await?;
+
+        if input.id.is_none() {
+            Printer::print_command(&format!("di destination test-connection {} --service-name {} ", &id, &service_name));
+        }
+
+        let spinner = Printer::start_spinner("Testing destination connection");
+        let source = self.rcp_client.clone().di_destination_test(&service_name, &id).await?;
+        Printer::stop_spinner(spinner);
+
+        Printer::print_object(&source, &output)?;
         Ok(())
     }
 
