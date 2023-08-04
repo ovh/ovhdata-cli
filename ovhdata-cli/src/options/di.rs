@@ -50,6 +50,8 @@ pub enum DiSubSourceCommands {
     /// Delete a source
     #[clap(visible_alias = "rm")]
     Delete(SourceDelete),
+    /// Test the source connection
+    TestConnection(SourceGet),
 }
 
 #[derive(Parser)]
@@ -130,6 +132,8 @@ pub enum DiSubDestCommands {
     /// Delete a destination
     #[clap(visible_alias = "rm")]
     Delete(DestDelete),
+    /// Test the destination connection
+    TestConnection(DestGet),
 }
 
 #[derive(Parser)]

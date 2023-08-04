@@ -1,8 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
-use std::fs;
-use std::fs::{create_dir_all, File};
+use std::fs::{create_dir_all, metadata, set_permissions, File};
 use std::io::{BufReader, BufWriter};
 use std::ops::Deref;
 use std::path::PathBuf;
@@ -218,7 +217,7 @@ impl Context {
                 let metadata = context_file_handle.metadata()?;
                 let mut permissions = metadata.permissions();
                 permissions.set_mode(0o600); // Read/write user only.
-                fs::set_permissions(&context_file, permissions)?;
+                set_permissions(&context_file, permissions)?;
             }
             serde_json::to_writer_pretty(BufWriter::new(context_file_handle), &Context::default())?;
         } else {
@@ -226,7 +225,7 @@ impl Context {
             {
                 use std::os::unix::fs::PermissionsExt;
 
-                let mode = fs::metadata(&context_file)?.permissions().mode();
+                let mode = metadata(&context_file)?.permissions().mode();
                 if mode != 0o100600 {
                     eprintln!("{}", format!("WARNING: {} file permissions are incorrect for a file that holds sensitive information. Please manually run `chmod 600 {}` (read/write for user only).", &context_file.to_str().unwrap(), &context_file.to_str().unwrap()).yellow());
                     {}

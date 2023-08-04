@@ -40,6 +40,8 @@ pub trait DiApi {
     async fn di_source_post(&self, service_name: &str, spec: &SourceSpec) -> Result<Source>;
     /// Updates a source
     async fn di_source_update(&self, service_name: &str, id: &str, spec: &SourceSpec) -> Result<Source>;
+    /// Test source connection
+    async fn di_source_test(&self, service_name: &str, id: &str) -> Result<Status>;
 
     /// List all the destinations for a service name
     async fn di_destinations(&self, service_name: &str) -> Result<Vec<Destination>>;
@@ -53,6 +55,8 @@ pub trait DiApi {
     async fn di_destination_delete(&self, service_name: &str, id: &str) -> Result<()>;
     /// Updates a destination
     async fn di_destination_update(&self, service_name: &str, id: &str, spec: &DestinationSpec) -> Result<Destination>;
+    /// Test source connection
+    async fn di_destination_test(&self, service_name: &str, id: &str) -> Result<Status>;
 
     /// List all the workflows for a service name
     async fn di_workflows(&self, service_name: &str) -> Result<Vec<Workflow>>;
@@ -152,6 +156,20 @@ impl DiApi for OVHapiV6Client {
             .build_request(
                 Method::GET,
                 &["cloud", "project", service_name, "dataIntegration", "sources", id],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+        response.parse().await
+    }
+
+    async fn di_source_test(&self, service_name: &str, id: &str) -> Result<Status> {
+        let request = self
+            .build_request(
+                Method::POST,
+                &["cloud", "project", service_name, "dataIntegration", "sources", id, "connection"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
@@ -264,6 +282,20 @@ impl DiApi for OVHapiV6Client {
             .build_request(
                 Method::GET,
                 &["cloud", "project", service_name, "dataIntegration", "destinations", id],
+                &[],
+                &HeaderMap::new(),
+                EMPTY_BODY,
+            )
+            .await?;
+        let response = request.send(&self.client, &[]).await?;
+        response.parse().await
+    }
+
+    async fn di_destination_test(&self, service_name: &str, id: &str) -> Result<Status> {
+        let request = self
+            .build_request(
+                Method::POST,
+                &["cloud", "project", service_name, "dataIntegration", "destinations", id, "connection"],
                 &[],
                 &HeaderMap::new(),
                 EMPTY_BODY,
