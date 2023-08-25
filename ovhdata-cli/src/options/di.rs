@@ -72,9 +72,9 @@ pub struct SourceList {
     #[clap(long, action)]
     pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
-    /// To pervent interactive display of the list
+    /// To prevent interactive display of the list
     #[clap(long, short, action)]
     pub force: bool,
 }
@@ -156,9 +156,9 @@ pub struct DestList {
     #[clap(long, action)]
     pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
-    /// To pervent interactive display of the list
+    /// To prevent interactive display of the list
     #[clap(long, short, action)]
     pub force: bool,
 }
@@ -244,9 +244,9 @@ pub struct WorkflowList {
     #[clap(long, action)]
     pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
-    /// To pervent interactive display of the list
+    /// To prevent interactive display of the list
     #[clap(long, short, action)]
     pub force: bool,
 }
@@ -352,9 +352,9 @@ pub struct JobList {
     #[clap(long, action)]
     pub desc: bool,
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
-    /// To pervent interactive display of the list
+    /// To prevent interactive display of the list
     #[clap(long, short, action)]
     pub force: bool,
 }
@@ -392,7 +392,7 @@ pub enum DiSubSourceConnectorCommands {
 #[derive(Parser)]
 pub struct SourceConnectorList {
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
 }
 
@@ -417,7 +417,7 @@ pub enum DiSubDestConnectorCommands {
 #[derive(Parser)]
 pub struct DestConnectorList {
     /// Command output format
-    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "table"]).map(|s| s.parse::<OutputList>().unwrap()))]
+    #[clap(short, long, value_parser = PossibleValuesParser::new(&["json", "yaml", "list"]).map(|s| s.parse::<OutputList>().unwrap()))]
     pub output: Option<OutputList>,
 }
 
