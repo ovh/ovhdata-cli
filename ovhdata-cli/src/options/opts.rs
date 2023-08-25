@@ -153,9 +153,8 @@ impl FromStr for OutputObject {
     }
 }
 
-#[derive(Parser, Clone)]
+#[derive(Parser, Clone, Copy)]
 pub enum OutputList {
-    Table,
     Json,
     Yaml,
     List
@@ -170,7 +169,6 @@ impl Default for OutputList {
 impl From<OutputList> for Output {
     fn from(output: OutputList) -> Self {
         match output {
-            OutputList::Table => Output::default_table(),
             OutputList::Json => Output::Json,
             OutputList::Yaml => Output::Yaml,
             OutputList::List => Output::default_table()
@@ -183,7 +181,7 @@ impl FromStr for OutputList {
 
     fn from_str(s: &str) -> ParseResult<Self> {
         match s.to_lowercase().as_str() {
-            "table" => Ok(OutputList::Table),
+            "list" => Ok(OutputList::List),
             "json" => Ok(OutputList::Json),
             "yaml" => Ok(OutputList::Yaml),
 

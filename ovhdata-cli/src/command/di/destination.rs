@@ -26,7 +26,7 @@ impl DestinationCommand {
                 self.get_last_connection_status(&dest_get, dest_get.output.unwrap_or_default().into())
                     .await
             }
-            DiSubDestCommands::List(destination_list) => self.list(&destination_list, destination_list.output.clone().unwrap_or_default().into()).await,
+            DiSubDestCommands::List(destination_list) => self.list(&destination_list, destination_list.output.unwrap_or_default().into()).await,
             DiSubDestCommands::Get(destination_get) => self.get(&destination_get, destination_get.output.unwrap_or_default().into()).await,
             DiSubDestCommands::Create(dest_create) => self.create(&dest_create, dest_create.output.unwrap_or_default().into()).await,
             DiSubDestCommands::Update(dest_update) => self.update(&dest_update, dest_update.output.unwrap_or_default().into()).await,
@@ -38,14 +38,18 @@ impl DestinationCommand {
     async fn list(&self, input: &DestList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let destinations = self.rcp_client.clone().di_destinations_filtered(&service_name, input.filter.clone()).await?;
-        let sorted_destinations = sort_dest(destinations, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        let mut destinations = self.rcp_client.clone().di_destinations_filtered(&service_name, input.filter.clone()).await?;
+
+        if output == Output::default_table() {
+            destinations = sort_dest(destinations, input.order.clone().unwrap_or_default().as_str(), input.desc);
+
+            if !input.force {
+                Printer::print_interactive_list(&destinations, None)?;
+                return Ok(());
+            }
+        } 
         
-        if !input.force && (output != Output::Json && output != Output::Yaml) {
-            Printer::print_interactive_list(&sorted_destinations, None)?;
-        } else {
-            Printer::print_list(&sorted_destinations, &output)?;
-        }
+        Printer::print_list(&destinations, &output)?;
         Ok(())
     }
 

@@ -19,7 +19,7 @@ impl JobCommand {
 
     pub async fn execute_command(&self, commands: DiSubJobCommands) -> Result<()> {
         match commands {
-            DiSubJobCommands::List(job_list) => self.list(&job_list, job_list.output.clone().unwrap_or_default().into()).await,
+            DiSubJobCommands::List(job_list) => self.list(&job_list, job_list.output.unwrap_or_default().into()).await,
             DiSubJobCommands::Get(job_get) => self.get(&job_get, job_get.output.unwrap_or_default().into()).await,
             DiSubJobCommands::Stop(job_stop) => self.stop(&job_stop).await,
         }
@@ -40,14 +40,18 @@ impl JobCommand {
             Printer::print_command(&format!("di job list --service-name {} --workflow-id {}", &service_name, &workflow_id));
         }
 
-        let jobs = self.rcp_client.clone().di_jobs_filtered(&service_name, &workflow_id,input.filter.clone()).await?;
-        let sorted_jobs = sort_job(jobs, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        let mut jobs = self.rcp_client.clone().di_jobs_filtered(&service_name, &workflow_id,input.filter.clone()).await?;
         
-        if !input.force && (output != Output::Json && output != Output::Yaml) && !interactive {
-            Printer::print_interactive_list(&sorted_jobs, None)?;
-        } else {
-            Printer::print_list(&sorted_jobs, &output)?;
-        }
+        if output == Output::default_table() {
+            jobs = sort_job(jobs, input.order.clone().unwrap_or_default().as_str(), input.desc);
+
+            if !input.force {
+                Printer::print_interactive_list(&jobs, None)?;
+                return Ok(());
+            }
+        } 
+
+        Printer::print_list(&jobs, &output)?;
         Ok(())
     }
 

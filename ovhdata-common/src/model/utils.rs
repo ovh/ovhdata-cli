@@ -79,7 +79,7 @@ pub struct AgeEntity {
     pub last_update: Option<String>,
     #[descriptor(skip_description, rename_header = "DURATION")]
     pub duration: Option<String>,
-    #[descriptor(skip_description, rename_header = "AST_EXECUTION")]
+    #[descriptor(skip_description, rename_header = "LAST_EXECUTION")]
     pub last_execution: Option<String>,
 }
 

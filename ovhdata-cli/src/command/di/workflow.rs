@@ -21,7 +21,7 @@ impl WorkflowCommand {
 
     pub async fn execute_command(&self, commands: DiSubWorkflowCommands) -> Result<()> {
         match commands {
-            DiSubWorkflowCommands::List(workflow_list) => self.list(&workflow_list, workflow_list.output.clone().unwrap_or_default().into()).await,
+            DiSubWorkflowCommands::List(workflow_list) => self.list(&workflow_list, workflow_list.output.unwrap_or_default().into()).await,
             DiSubWorkflowCommands::Get(workflow_get) => self.get(&workflow_get, workflow_get.output.unwrap_or_default().into()).await,
             DiSubWorkflowCommands::Create(workflow_create) => self.create(&workflow_create, workflow_create.output.unwrap_or_default().into()).await,
             DiSubWorkflowCommands::Run(workflow_run) => self.run(&workflow_run, workflow_run.output.unwrap_or_default().into()).await,
@@ -35,14 +35,18 @@ impl WorkflowCommand {
     async fn list(&self, input: &WorkflowList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let workflows = self.rcp_client.clone().di_workflows_filtered(&service_name, input.filter.clone()).await?;
-        let sorted_workflows = sort_workflow(workflows, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        let mut workflows = self.rcp_client.clone().di_workflows_filtered(&service_name, input.filter.clone()).await?;
         
-        if !input.force && (output != Output::Json && output != Output::Yaml) {
-            Printer::print_interactive_list(&sorted_workflows, None)?;
-        } else {
-            Printer::print_list(&sorted_workflows, &output)?;
-        }
+        if output == Output::default_table() {
+            workflows = sort_workflow(workflows, input.order.clone().unwrap_or_default().as_str(), input.desc);
+
+            if !input.force {
+                Printer::print_interactive_list(&workflows, None)?;
+                return Ok(());
+            }
+        } 
+        
+        Printer::print_list(&workflows, &output)?;
         Ok(())
     }
 
