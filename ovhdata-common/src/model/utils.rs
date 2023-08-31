@@ -205,7 +205,7 @@ pub fn sort_source(mut list: Vec<Source>, order_by: &str, desc: bool) -> Vec<Sou
         "age" => list.sort_by_key(|s| s.creation_date),
         "connector" => list.sort_by_key(|s| s.connector_id.clone()),
         "update" => list.sort_by_key(|s| s.last_update_date),
-        _ => list.sort_by_key(|s| s.name.clone())
+        _ => list.sort_by_key(|s| s.name.clone()),
     }
     if desc && order_by != "age" && order_by != "update" {
         list.reverse();
@@ -219,7 +219,7 @@ pub fn sort_dest(mut list: Vec<Destination>, order_by: &str, desc: bool) -> Vec<
         "age" => list.sort_by_key(|d| d.creation_date),
         "connector" => list.sort_by_key(|d| d.connector_id.clone()),
         "update" => list.sort_by_key(|d| d.last_update_date),
-        _ => list.sort_by_key(|d| d.name.clone())
+        _ => list.sort_by_key(|d| d.name.clone()),
     }
     if desc && order_by != "age" && order_by != "update" {
         list.reverse();
@@ -234,7 +234,7 @@ pub fn sort_workflow(mut list: Vec<Workflow>, order_by: &str, desc: bool) -> Vec
         "source-name" => list.sort_by_key(|w| w.source_name.clone()),
         "destination-name" => list.sort_by_key(|w| w.destination_name.clone()),
         "last-execution" => list.sort_by_key(|w| w.last_execution_date),
-        _ => list.sort_by_key(|w| w.name.clone())
+        _ => list.sort_by_key(|w| w.name.clone()),
     }
     if desc && order_by != "last-execution" {
         list.reverse();
@@ -245,7 +245,7 @@ pub fn sort_workflow(mut list: Vec<Workflow>, order_by: &str, desc: bool) -> Vec
 pub fn sort_job(mut list: Vec<Job>, order_by: &str, desc: bool) -> Vec<Job> {
     match order_by {
         "status" => list.sort_by_key(|j| j.status.clone()),
-            _ => list.sort_by_key(|j| j.created_at)
+        _ => list.sort_by_key(|j| j.created_at),
     }
     if desc && order_by == "status" {
         list.reverse();

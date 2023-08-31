@@ -157,7 +157,7 @@ impl FromStr for OutputObject {
 pub enum OutputList {
     Json,
     Yaml,
-    List
+    List,
 }
 
 impl Default for OutputList {
@@ -171,7 +171,7 @@ impl From<OutputList> for Output {
         match output {
             OutputList::Json => Output::Json,
             OutputList::Yaml => Output::Yaml,
-            OutputList::List => Output::default_table()
+            OutputList::List => Output::default_table(),
         }
     }
 }

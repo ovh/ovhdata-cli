@@ -69,7 +69,7 @@ pub struct SourceList {
     pub filter: Option<String>,
     /// Field by witch the list will be ordered (default: by name)
     #[clap(long, value_parser = PossibleValuesParser::new(["age", "update", "status", "connector", "name"]))]
-    pub order: Option<String>,
+    pub sort: Option<String>,
     /// Return list in descending order (if not present the default behaviour is ascending)
     #[clap(long, action)]
     pub desc: bool,
@@ -78,7 +78,7 @@ pub struct SourceList {
     pub output: Option<OutputList>,
     /// To prevent interactive display of the list
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -96,7 +96,7 @@ pub struct SourceDelete {
     pub id: Option<String>,
     /// Never prompt confirmation
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -155,7 +155,7 @@ pub struct DestList {
     pub filter: Option<String>,
     /// Field by witch the list will be ordered (default: by name)
     #[clap(long, value_parser = PossibleValuesParser::new(["age", "update", "status", "connector", "name"]))]
-    pub order: Option<String>,
+    pub sort: Option<String>,
     /// Return list in descending order (if not present the default behaviour is ascending)
     #[clap(long, action)]
     pub desc: bool,
@@ -164,7 +164,7 @@ pub struct DestList {
     pub output: Option<OutputList>,
     /// To prevent interactive display of the list
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -182,7 +182,7 @@ pub struct DestDelete {
     pub id: Option<String>,
     /// Never prompt confirmation
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -243,7 +243,7 @@ pub struct WorkflowList {
     pub filter: Option<String>,
     /// Field by witch the list will be ordered (default: by name)
     #[clap(long, value_parser = PossibleValuesParser::new(["last-execution", "status", "enabled", "source-name", "destination-name"]))]
-    pub order: Option<String>,
+    pub sort: Option<String>,
     /// Return list in descending order (if not present the default behaviour is ascending)
     #[clap(long, action)]
     pub desc: bool,
@@ -252,7 +252,7 @@ pub struct WorkflowList {
     pub output: Option<OutputList>,
     /// To prevent interactive display of the list
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -306,7 +306,7 @@ pub struct WorkflowDelete {
     pub id: Option<String>,
     /// Never prompt confirmation
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]
@@ -351,7 +351,7 @@ pub struct JobList {
     pub filter: Option<String>,
     /// Field by witch the list will be ordered (default: by age)
     #[clap(long, value_parser = PossibleValuesParser::new(["age", "status"]))]
-    pub order: Option<String>,
+    pub sort: Option<String>,
     /// Return list in descending order (if not present the default behaviour is ascending)
     #[clap(long, action)]
     pub desc: bool,
@@ -360,7 +360,7 @@ pub struct JobList {
     pub output: Option<OutputList>,
     /// To prevent interactive display of the list
     #[clap(long, short, action)]
-    pub force: bool,
+    pub script: bool,
 }
 
 #[derive(Parser)]

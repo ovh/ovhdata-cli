@@ -1,6 +1,6 @@
 use crossterm::style::Stylize;
-use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 use ovhdata_common::model::utils::sort_job;
+use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 use std::io::stdout;
 
 use crate::config::Context;
@@ -30,7 +30,7 @@ impl JobCommand {
         let interactive = input.workflow_id.is_none();
 
         let workflow_id = if interactive {
-            let workflows = self.rcp_client.clone().di_workflows(&service_name).await?;
+            let workflows = self.rcp_client.clone().di_workflows(&service_name, None).await?;
             Printer::ask_select_table(&workflows, None)?.id.clone()
         } else {
             input.workflow_id.clone().unwrap()
@@ -40,16 +40,16 @@ impl JobCommand {
             Printer::print_command(&format!("di job list --service-name {} --workflow-id {}", &service_name, &workflow_id));
         }
 
-        let mut jobs = self.rcp_client.clone().di_jobs_filtered(&service_name, &workflow_id,input.filter.clone()).await?;
-        
-        if output == Output::default_table() {
-            jobs = sort_job(jobs, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        let mut jobs = self.rcp_client.clone().di_jobs(&service_name, &workflow_id, input.filter.clone()).await?;
 
-            if !input.force {
+        if output == Output::default_table() && !jobs.is_empty() {
+            jobs = sort_job(jobs, input.sort.clone().unwrap_or_default().as_str(), input.desc);
+
+            if !input.script {
                 Printer::print_interactive_list(&jobs, None)?;
                 return Ok(());
             }
-        } 
+        }
 
         Printer::print_list(&jobs, &output)?;
         Ok(())
@@ -98,7 +98,7 @@ impl JobCommand {
         let mut missing_job = input_id.is_none();
 
         let workflow_id = if missing_workflow {
-            let workflows = self.rcp_client.clone().di_workflows(service_name).await?;
+            let workflows = self.rcp_client.clone().di_workflows(service_name, None).await?;
             missing_job = true;
 
             Printer::ask_select_table(&workflows, None)?.id.clone()
@@ -107,7 +107,7 @@ impl JobCommand {
         };
 
         let id = if missing_job {
-            let jobs = self.rcp_client.clone().di_jobs(service_name, &workflow_id).await?;
+            let jobs = self.rcp_client.clone().di_jobs(service_name, &workflow_id, None).await?;
 
             Printer::ask_select_table(&jobs, input_id.clone())?.id.clone()
         } else {

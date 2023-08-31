@@ -421,7 +421,11 @@ impl Printer {
         let table = table_describe_to_string(data).unwrap();
         let mut table_entries: Vec<_> = table.split('\n').collect();
 
-        let prompt = format!("{} items in the list (use arrows to scroll and Esc or Enter to quit)\n  {}\n", table_entries.len()-1, table_entries.first().unwrap());
+        let prompt = format!(
+            "{} items in the list (use arrows to scroll and Esc or Enter to quit)\n  {}\n",
+            table_entries.len() - 1,
+            table_entries.first().unwrap()
+        );
         println!("{}", prompt);
         table_entries.remove(0);
 
@@ -431,10 +435,10 @@ impl Printer {
             .default(0)
             .report(false)
             .with_initial_text(default_selection.unwrap_or_default())
-            .interact_on_opt(&Term::stderr()).expect("failed to display the list");
-            
+            .interact_on_opt(&Term::stderr())
+            .expect("failed to display the list");
+
         Ok(())
-        
     }
 
     pub fn print_json<T: Serialize>(data: &T) -> Result<()> {
@@ -455,7 +459,7 @@ impl Printer {
         writeln!(stdout(), "> {} {}", CLI_NAME.bold(), command.bold()).unwrap();
         writeln!(
             stdout(),
-            "(consider adding the --no-spinner, --no-color and -f options to use this command in a script)"
+            "(consider adding the --no-spinner, --no-color and -s options to use this command in a script)"
         )
         .unwrap();
     }

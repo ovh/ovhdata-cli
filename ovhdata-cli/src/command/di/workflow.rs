@@ -6,7 +6,7 @@ use ovhdata_common::model::utils::sort_workflow;
 use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 
 use crate::config::Context;
-use crate::options::{DiSubWorkflowCommands, WorkflowList, WorkflowCreate, WorkflowDelete, WorkflowGet, WorkflowRun, WorkflowUpdate};
+use crate::options::{DiSubWorkflowCommands, WorkflowCreate, WorkflowDelete, WorkflowGet, WorkflowList, WorkflowRun, WorkflowUpdate};
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::{Error, Result};
 
@@ -35,17 +35,17 @@ impl WorkflowCommand {
     async fn list(&self, input: &WorkflowList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let mut workflows = self.rcp_client.clone().di_workflows_filtered(&service_name, input.filter.clone()).await?;
-        
-        if output == Output::default_table() {
-            workflows = sort_workflow(workflows, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        let mut workflows = self.rcp_client.clone().di_workflows(&service_name, input.filter.clone()).await?;
 
-            if !input.force {
+        if output == Output::default_table() && !workflows.is_empty() {
+            workflows = sort_workflow(workflows, input.sort.clone().unwrap_or_default().as_str(), input.desc);
+
+            if !input.script {
                 Printer::print_interactive_list(&workflows, None)?;
                 return Ok(());
             }
-        } 
-        
+        }
+
         Printer::print_list(&workflows, &output)?;
         Ok(())
     }
@@ -69,7 +69,7 @@ impl WorkflowCommand {
 
         let missing_source = input.source_id.is_none();
         let source_id = if missing_source {
-            let sources = self.rcp_client.clone().di_sources(&service_name).await?;
+            let sources = self.rcp_client.clone().di_sources(&service_name, None).await?;
             Printer::ask_select_table(&sources, None)?.id.clone()
         } else {
             input.source_id.clone().unwrap()
@@ -77,7 +77,7 @@ impl WorkflowCommand {
 
         let missing_destination = input.destination_id.is_none();
         let destination_id = if missing_destination {
-            let destinations = self.rcp_client.clone().di_destinations(&service_name).await?;
+            let destinations = self.rcp_client.clone().di_destinations(&service_name, None).await?;
             Printer::ask_select_table(&destinations, None)?.id.clone()
         } else {
             input.destination_id.clone().unwrap()
@@ -143,7 +143,7 @@ impl WorkflowCommand {
         let interactive = input.id.is_none();
 
         let id = if interactive {
-            let workflows = self.rcp_client.clone().di_workflows(&service_name).await?;
+            let workflows = self.rcp_client.clone().di_workflows(&service_name, None).await?;
             Printer::ask_select_table(&workflows, None)?.id.clone()
         } else {
             input.id.clone().unwrap()
@@ -166,7 +166,7 @@ impl WorkflowCommand {
 
         let workflow_id = self.get_workflow_id(&service_name, &input.id).await?;
 
-        if !input.force {
+        if !input.script {
             let message = format!("Are you sure you want to delete the workflow {} ?", workflow_id.clone().green());
             let confirm = Printer::confirm(&message);
 
@@ -288,7 +288,7 @@ impl WorkflowCommand {
         let interactive = input_id.is_none();
 
         let id = if interactive {
-            let workflows = self.rcp_client.clone().di_workflows(service_name).await?;
+            let workflows = self.rcp_client.clone().di_workflows(service_name, None).await?;
             Printer::ask_select_table(&workflows, None)?.id.clone()
         } else {
             input_id.clone().unwrap()

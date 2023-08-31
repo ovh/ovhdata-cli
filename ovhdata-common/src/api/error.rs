@@ -1,6 +1,6 @@
+use crate::utils::jsonpath::JsonPathError;
 use reqwest::StatusCode;
 use thiserror::Error as ThisError;
-use crate::utils::jsonpath::JsonPathError;
 
 #[derive(ThisError, Debug)]
 pub enum Error {
