@@ -60,7 +60,7 @@ impl SourceMetadataCommand {
         let interactive = input_id.is_none();
 
         let id = if interactive {
-            let sources = self.rcp_client.clone().di_sources(service_name).await?;
+            let sources = self.rcp_client.clone().di_sources(service_name, None).await?;
 
             Printer::ask_select_table(&sources, None)?.id.clone()
         } else {

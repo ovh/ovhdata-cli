@@ -7,7 +7,7 @@ use ovhdata_common::model::utils::sort_dest;
 use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 
 use crate::config::Context;
-use crate::options::{DestCreate, DestDelete, DestList, DestGet, DestUpdate, DiSubDestCommands};
+use crate::options::{DestCreate, DestDelete, DestGet, DestList, DestUpdate, DiSubDestCommands};
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::{Error, Result};
 
@@ -37,17 +37,17 @@ impl DestinationCommand {
     async fn list(&self, input: &DestList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let mut destinations = self.rcp_client.clone().di_destinations_filtered(&service_name, input.filter.clone()).await?;
+        let mut destinations = self.rcp_client.clone().di_destinations(&service_name, input.filter.clone()).await?;
 
-        if output == Output::default_table() {
-            destinations = sort_dest(destinations, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        if output == Output::default_table() && !destinations.is_empty() {
+            destinations = sort_dest(destinations, input.sort.clone().unwrap_or_default().as_str(), input.desc);
 
-            if !input.force {
+            if !input.script {
                 Printer::print_interactive_list(&destinations, None)?;
                 return Ok(());
             }
-        } 
-        
+        }
+
         Printer::print_list(&destinations, &output)?;
         Ok(())
     }
@@ -185,7 +185,7 @@ impl DestinationCommand {
 
         let destination_id = self.get_destination_id(&service_name, &input.id).await?;
 
-        if !input.force {
+        if !input.script {
             let message = format!("Are you sure you want to delete the destination {} ?", destination_id.clone().green());
             let confirm = Printer::confirm(&message);
 
@@ -230,7 +230,7 @@ impl DestinationCommand {
         let interactive = input_id.is_none();
 
         let id = if interactive {
-            let destinations = self.rcp_client.clone().di_destinations(service_name).await?;
+            let destinations = self.rcp_client.clone().di_destinations(service_name, None).await?;
             Printer::ask_select_table(&destinations, None)?.id.clone()
         } else {
             input_id.clone().unwrap()

@@ -8,7 +8,7 @@ use ovhdata_common::ovhapi::{DiApi, OVHapiV6Client};
 
 use crate::command::di::source_metadata::SourceMetadataCommand;
 use crate::config::Context;
-use crate::options::{DiSubSourceCommands, SourceCreate, SourceList, SourceDelete, SourceGet, SourceUpdate};
+use crate::options::{DiSubSourceCommands, SourceCreate, SourceDelete, SourceGet, SourceList, SourceUpdate};
 use crate::utils::ui::printer::{Output, Printer};
 use crate::utils::{Error, Result};
 
@@ -19,7 +19,7 @@ pub struct SourceCommand {
 impl SourceCommand {
     pub fn new(rcp_client: OVHapiV6Client) -> Self {
         Self { rcp_client }
-    }                 
+    }
 
     pub async fn execute_command(&self, commands: DiSubSourceCommands) -> Result<()> {
         match commands {
@@ -36,17 +36,17 @@ impl SourceCommand {
     async fn list(&self, input: &SourceList, output: Output) -> Result<()> {
         let service_name = Context::get().get_current_service_name().unwrap();
 
-        let mut sources = self.rcp_client.clone().di_sources_filtered(&service_name, input.filter.clone()).await?;
+        let mut sources = self.rcp_client.clone().di_sources(&service_name, input.filter.clone()).await?;
 
-        if output == Output::default_table() {
-            sources = sort_source(sources, input.order.clone().unwrap_or_default().as_str(), input.desc);
+        if output == Output::default_table() && !sources.is_empty() {
+            sources = sort_source(sources, input.sort.clone().unwrap_or_default().as_str(), input.desc);
 
-            if !input.force {
+            if !input.script {
                 Printer::print_interactive_list(&sources, None)?;
                 return Ok(());
             }
-        } 
-        
+        }
+
         Printer::print_list(&sources, &output)?;
         Ok(())
     }
@@ -195,7 +195,7 @@ impl SourceCommand {
 
         let source_id = self.get_source_id(&service_name, &input.id).await?;
 
-        if !input.force {
+        if !input.script {
             let message = format!("Are you sure you want to delete the source {} ?", source_id.clone().green());
             let confirm = Printer::confirm(&message);
 
@@ -220,7 +220,7 @@ impl SourceCommand {
         let interactive = input_id.is_none();
 
         let id = if interactive {
-            let sources = self.rcp_client.clone().di_sources(service_name).await?;
+            let sources = self.rcp_client.clone().di_sources(service_name, None).await?;
 
             Printer::ask_select_table(&sources, None)?.id.clone()
         } else {

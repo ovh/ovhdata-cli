@@ -45,7 +45,7 @@ pub enum OrderListSourceDest {
     Update,
     Status,
     Connector,
-    Name
+    Name,
 }
 
 impl Default for OrderListSourceDest {

@@ -4,24 +4,40 @@ use std::ops::{Deref, DerefMut};
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Request, Response, StatusCode};
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 
 use tracing::{debug, error, info};
 use uuid::Uuid;
 
 use crate::api::{Error, Result};
 use crate::model::utils::ResponseError;
+use crate::utils::jsonpath;
 use crate::REQUEST_ID;
 
 pub const EMPTY_BODY: Option<&()> = None;
 
 /// Deserialize response body as JSON
-pub async fn parse_response<T>(response: ResponseWrapper) -> Result<T>
+pub async fn parse_response<T>(response: ResponseWrapper, filter: Option<String>) -> Result<T>
 where
     T: DeserializeOwned,
 {
     let body_string = response.body_text().await;
-    serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))
+    let mut new_body: Value = serde_json::from_str(body_string.as_str()).map_err(|e| Error::DeserializeContent(e, body_string))?;
+
+    if new_body.is_array() && !new_body.as_array().unwrap().is_empty() {
+        new_body = jsonpath::json_parse_task(new_body, filter).map_err(Error::FilterContent)?;
+    }
+
+    serde_json::from_value(new_body.clone()).map_err(|e| Error::DeserializeContent(e, new_body.to_string()))
 }
+
+// /// Deserialize response body as JSON
+// pub async fn parse_value<T>(value: Value) -> Result<T>
+// where
+//     T: DeserializeOwned,
+// {
+//     serde_json::from_value(value).map_err(|e| Error::DeserializeContent(e, value.clone().as_str()))
+// }
 
 /// Send HTTP request with optional body and return a response
 #[tracing::instrument(
@@ -149,8 +165,13 @@ impl ResponseWrapper {
     pub fn from(request_id: Uuid, response: Response) -> Self {
         Self { request_id, response }
     }
+
     pub async fn parse<T: DeserializeOwned>(self) -> Result<T> {
-        parse_response::<T>(self).await
+        parse_response::<T>(self, None).await
+    }
+
+    pub async fn parse_with_filter<T: DeserializeOwned>(self, filter: Option<String>) -> Result<T> {
+        parse_response::<T>(self, filter).await
     }
 }
 
