@@ -1220,7 +1220,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "ovhdata-cli"
-version = "0.2.1-dev"
+version = "0.2.2-dev"
 dependencies = [
  "chrono",
  "clap",
@@ -1257,7 +1257,7 @@ dependencies = [
 
 [[package]]
 name = "ovhdata-common"
-version = "0.2.1"
+version = "0.2.2-dev"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1288,7 +1288,7 @@ dependencies = [
 
 [[package]]
 name = "ovhdata-macros"
-version = "0.2.1"
+version = "0.2.2-dev"
 dependencies = [
  "proc-macro2",
  "quote",
