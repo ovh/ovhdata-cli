@@ -123,6 +123,7 @@ Started At: 03-06-21 12:22:46
 Ended At:   ~
 Metadata:
   NAME   TYPE   CARDINALITY   MIN   MAXEmpty list
+
 "#
         )
     }
@@ -156,6 +157,7 @@ Started At: ~
 Ended At:   ~
 Metadata:
   NAME   TYPE   CARDINALITY   MIN   MAXEmpty list
+
 "#
         )
     }
